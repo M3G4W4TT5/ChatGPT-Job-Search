@@ -16,8 +16,8 @@ CLI for searching the [freehire.me](https://freehire.me) job aggregator across
 
 ## Installation
 
-```bash
-cd .agents/skills/freehire-search/cli
+```powershell
+# First change to this skill's `cli` directory (the one containing package.json).
 bun install   # optional — only installs TypeScript dev types
 ```
 
@@ -27,7 +27,7 @@ The CLI runs without any install because it has zero runtime dependencies.
 
 The base URL defaults to `https://freehire.me` and is overridable with an env var:
 
-```bash
+```powershell
 FREEHIRE_API_URL=http://localhost:8080 bun run src/cli.ts search -q "go"
 ```
 
@@ -51,7 +51,7 @@ slug — including a closed one, which search does not return.
 
 ## Quick examples
 
-```bash
+```powershell
 # Senior backend roles, table view
 bun run src/cli.ts search -q "backend engineer" --seniority senior --limit 10 --format table
 

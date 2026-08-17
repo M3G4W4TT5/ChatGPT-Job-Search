@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jobdanmark search"
+  short_description: "Search current vacancies through the Jobdanmark API."
+  default_prompt: "Use $jobdanmark-search to search Jobdanmark for the specified vacancies."

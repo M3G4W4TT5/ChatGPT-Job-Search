@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jobnet search"
+  short_description: "Search current vacancies through the official Jobnet API."
+  default_prompt: "Use $jobnet-search to search Jobnet for the specified Danish jobs."

@@ -1,5 +1,5 @@
 export const BASE_URL = "https://jobnet.dk/bff"
-export const USER_AGENT = "Mozilla/5.0 (compatible; jobnet-cli/1.0)"
+export const USER_AGENT = "AIJobSearchBot/1.0"
 
 export async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   let url = `${BASE_URL}${path}`

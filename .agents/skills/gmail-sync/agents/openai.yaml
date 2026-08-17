@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gmail sync"
+  short_description: "Reconcile application signals from Gmail or an export."
+  default_prompt: "Use $gmail-sync to propose tracker changes from the authorized Gmail data or export."

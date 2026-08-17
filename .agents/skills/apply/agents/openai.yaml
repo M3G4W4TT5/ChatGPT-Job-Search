@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create application"
+  short_description: "Draft, independently review, and verify an application."
+  default_prompt: "Use $apply to evaluate this posting and create a grounded, reviewed application."

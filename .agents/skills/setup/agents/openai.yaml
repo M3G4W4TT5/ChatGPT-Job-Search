@@ -1,0 +1,4 @@
+interface:
+  display_name: "Setup"
+  short_description: "Build a private, evidence-grounded job-search profile."
+  default_prompt: "Use $setup to build or update my private candidate profile from the supplied evidence."

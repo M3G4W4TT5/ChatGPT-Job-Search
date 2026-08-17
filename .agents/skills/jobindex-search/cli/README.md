@@ -10,8 +10,8 @@ CLI for searching jobs on [Jobindex.dk](https://www.jobindex.dk).
 
 ## Installation
 
-```bash
-cd skills/jobindex-search/cli
+```powershell
+# First change to this skill's `cli` directory (the one containing package.json).
 bun install
 ```
 
@@ -33,7 +33,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 **Endpoint**: `GET https://www.jobindex.dk/jobsoegning.json`
 
-```bash
+```powershell
 bun run src/cli.ts search [flags]
 ```
 
@@ -69,7 +69,7 @@ The API always returns 20 results per page (fixed — no `--per-page` flag). The
 
 ### Example
 
-```bash
+```powershell
 # Search for Python jobs posted in the last 7 days, sorted by date
 bun run src/cli.ts search --query python --jobage 7 --sort date
 
@@ -122,7 +122,7 @@ bun run src/cli.ts search --query "data engineer" --page 2 --format table
 
 **URL**: `https://www.jobindex.dk/jobannonce/{id}/{slug}`
 
-```bash
+```powershell
 bun run src/cli.ts detail <id> [--format json|plain]
 ```
 
@@ -138,7 +138,7 @@ You may also pass the full URL directly as the `id` argument.
 
 ### Example
 
-```bash
+```powershell
 # Using ID from search results
 bun run src/cli.ts detail h1647303
 

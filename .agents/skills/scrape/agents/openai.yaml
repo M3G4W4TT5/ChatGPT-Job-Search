@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scrape jobs"
+  short_description: "Find, normalize, and deduplicate current job postings."
+  default_prompt: "Use $scrape to find and normalize jobs for my stated focus and location."

@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "configured": false,
+  "cv_template": "cv/main_example.tex",
+  "cover_letter_template": "cover_letters/cover_example.tex"
+}

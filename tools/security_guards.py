@@ -1,272 +1,267 @@
 #!/usr/bin/env python3
-"""Supply-chain guards for the template's riskiest surfaces.
+"""Guard public/private boundaries and executable package surfaces."""
 
-Run from anywhere: python tools/security_guards.py
-
-This repo ships pre-approved Claude Code permissions and CLI code that every
-fork user executes. These guards make the dangerous changes LOUD, not
-impossible: a PR that intentionally needs one of them must update the
-allowlists in this file in the same diff, so the change is explicit and
-reviewable rather than buried.
-
-Checks:
-1. .claude/settings.json — every permissions.allow entry must be in the exact
-   allowlist below. Catches permission widening (e.g. Bash(*), Bash(curl:*)),
-   which would auto-approve commands on every fork. The same file's `hooks`
-   key is held to an allowlist too: a hook runs automatically when its event
-   fires, with no prompt, so it is strictly more dangerous than a pre-approved
-   permission.
-2. .gitignore — the personal-data ignore rules must all still be present,
-   and no un-allowlisted negation (!pattern) may re-include them. Catches
-   weakening that would make future users silently commit their tracker,
-   profile exports, or application archives.
-3. .agents/**/package.json — no npm/bun lifecycle scripts (preinstall,
-   install, postinstall, prepare, prepack) and no trustedDependencies.
-   Catches code execution smuggled into `bun install`.
-
-Stdlib only. Exit 0 on success, 1 with a failure list otherwise.
-"""
+from __future__ import annotations
 
 import json
+import re
+import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+
+ROOT = Path(__file__).resolve().parents[1]
 errors: list[str] = []
-
-# The exact permission entries the template ships. A PR that adds or changes
-# an entry must add it here too - that is the point: the diff shows both.
-ALLOWED_PERMISSIONS = {
-    "Skill(job-application-assistant)",
-    "Bash(bun run:*)",
-    "Bash(python salary_lookup.py:*)",
-    "Bash(python3 salary_lookup.py:*)",
-    "Bash(pdftotext:*)",
-}
-
-# Personal-data ignore rules that must never disappear from .gitignore.
-REQUIRED_IGNORE_RULES = [
+FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
+REQUIRED_IGNORE_RULES = {
+    "profile/**",
+    "!profile/.gitkeep",
     "salary_data.json",
-    # Depth-independent: the job-scraper skill resolves `job_scraper/` relative
-    # to its own directory, so the state file lands under .claude/skills/... and
-    # a repo-rooted rule silently fails to match it.
-    "**/job_scraper/seen_jobs.json",
-    "**/job_scraper/notion_sync.json",
-    "**/job_scraper/*.md",
+    "/job_scraper/",
     "*_BehavioralReport.pdf",
     "linkedin_Profile.pdf",
     "cv/main_*.*",
     "!cv/main_example.tex",
-    # ATS text extractions (/apply step 5d) carry the CV's full text.
     "cv/*.txt",
     "cover_letters/cover_*.*",
-    # /apply also recognizes the uppercase Cover_* naming variant.
     "cover_letters/Cover_*.*",
-    "documents/cv/**",
-    "documents/linkedin/**",
-    "documents/diplomas/**",
-    "documents/references/**",
-    "documents/applications/**",
-    "documents/postings/**",
-    "documents/interview/**",
+    "documents/**",
+    "!documents/README.md",
+    "!documents/**/",
     "job_search_tracker.csv",
-    "gmail_sync/",
-    "reports/",
-    "upskill/*.md",
-    # Depth-independent twin of the rule above. The upskill *skill* resolves
-    # `upskill/` relative to its own directory - the same observed behavior
-    # the **/job_scraper rules exist for - so reports can land at
-    # .claude/skills/upskill/upskill/*.md where the rooted rule cannot see
-    # them. `**/upskill/*.md` would also ignore the skill's own SKILL.md
-    # (the directory shares the name), so the report-file prefix is pinned.
-    "**/upskill/report-*.md",
-    # Not personal data but the same failure mode: /add-portal can generate a
-    # skill for a portal that only returns usable content through a paid
-    # fetching service, and that skill reads an API token from the environment.
+    "/gmail_sync/",
+    "/reports/",
+    "/upskill/",
     ".env",
     ".env.*",
-]
-
-# Negation (re-include) rules the template legitimately ships. .gitignore is
-# order-sensitive: a later `!pattern` re-includes a path an earlier rule
-# excluded, so a rule can be physically present in REQUIRED_IGNORE_RULES yet
-# no longer ignored (e.g. adding `!salary_data.json`). Set membership on the
-# required rules cannot see that. Any negation outside this allowlist is a
-# failure - add an intentional one here in the same PR, exactly as with
-# ALLOWED_PERMISSIONS, so the widening is explicit and reviewable.
-ALLOWED_IGNORE_NEGATIONS = {
+    "/dist/",
+}
+ALLOWED_NEGATIONS = {
+    "!profile/.gitkeep",
     "!cover_letters/OpenFonts/fonts/**",
     "!cv/main_example.tex",
     "!cover_letters/cover_example.tex",
+    "!documents/README.md",
+    "!documents/**/",
     "!documents/**/.gitkeep",
 }
-
-# Hook commands the template legitimately ships, as "<Event>:<command>" strings.
-# Empty by design - the template ships no hooks at all.
-#
-# A hook is strictly more dangerous than a permissions.allow entry. A permission
-# pre-approves something Claude may choose to do; a hook runs unconditionally when
-# its event fires, with no prompt and no model decision in between. Cloning a repo
-# and opening it is enough. This is the vector the Shai-Hulud worm used in its
-# August 2026 wave, planting a SessionStart hook in .claude/settings.json that
-# executed on session start:
-# https://research.jfrog.com/post/shai-hulud-is-back-august/
-ALLOWED_HOOKS: set[str] = set()
-
-FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
-
-
-def _hook_commands(event: str, entries: object):
-    """Yield "<Event>:<command>" for every command a hook event would run.
-
-    Fails closed: any shape this does not recognise yields a marker that cannot
-    be in the allowlist, so an unfamiliar hook layout is rejected rather than
-    silently skipped.
-    """
-    unrecognised = f"{event}:<unrecognised hook shape>"
-    if not isinstance(entries, list):
-        yield unrecognised
-        return
-    for entry in entries:
-        if not isinstance(entry, dict):
-            yield unrecognised
-            continue
-        inner = entry.get("hooks")
-        if not isinstance(inner, list):
-            yield unrecognised
-            continue
-        for hook in inner:
-            command = hook.get("command") if isinstance(hook, dict) else None
-            yield f"{event}:{command}" if isinstance(command, str) else unrecognised
+PRIVATE_TRACKED_PREFIXES = {
+    "profile/": {"profile/.gitkeep"},
+    "documents/": {
+        "documents/README.md",
+        "documents/applications/.gitkeep",
+        "documents/cv/.gitkeep",
+        "documents/diplomas/.gitkeep",
+        "documents/linkedin/.gitkeep",
+        "documents/postings/.gitkeep",
+        "documents/references/.gitkeep",
+    },
+    "job_scraper/": {"job_scraper/.gitkeep"},
+    "gmail_sync/": set(),
+    "reports/": set(),
+    "upskill/": {"upskill/.gitkeep"},
+}
+SECRET_PATTERNS = {
+    "private key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+    "OpenAI key": re.compile(r"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}"),
+    "GitHub token": re.compile(r"\b(?:ghp|github_pat)_[A-Za-z0-9_]{20,}"),
+    "Slack token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}"),
+}
 
 
-def check_permissions() -> None:
-    path = ROOT / ".claude" / "settings.json"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f".claude/settings.json: unreadable or invalid JSON: {exc}")
-        return
-    if not isinstance(data, dict):
-        errors.append(".claude/settings.json: top-level JSON value must be an object")
-        return
+def public_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        cwd=ROOT,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+    )
+    if result.returncode:
+        errors.append(f"git public-file inventory failed: {result.stderr.strip()}")
+        return []
+    return [line for line in result.stdout.splitlines() if line]
 
-    # Checked before the permissions shape guards below, so a file that pairs a
-    # malformed permissions block with a hook cannot return early and skip this.
-    hooks = data.get("hooks", {})
-    if hooks:
-        if not isinstance(hooks, dict):
-            errors.append(".claude/settings.json: hooks must be an object")
-        else:
-            for event, entries in hooks.items():
-                for command in _hook_commands(str(event), entries):
-                    if command not in ALLOWED_HOOKS:
-                        errors.append(
-                            f".claude/settings.json: hook not in the reviewed allowlist: "
-                            f"{command!r}. A hook runs automatically when its event fires - it "
-                            "is never gated by the permissions prompt, so it executes on every "
-                            "fork without the user agreeing to anything. If this hook is "
-                            "intentional, add it to ALLOWED_HOOKS in tools/security_guards.py "
-                            "in the same PR so the addition is explicit and reviewable."
-                        )
 
-    permissions = data.get("permissions", {})
-    if not isinstance(permissions, dict):
-        errors.append(".claude/settings.json: permissions must be an object")
-        return
-    allow = permissions.get("allow", [])
-    if not isinstance(allow, list) or not all(isinstance(entry, str) for entry in allow):
-        errors.append(".claude/settings.json: permissions.allow must be a list of strings")
-        return
-    for entry in allow:
-        if entry not in ALLOWED_PERMISSIONS:
-            errors.append(
-                f".claude/settings.json: permission not in the reviewed allowlist: {entry!r}. "
-                "Pre-approved permissions run without prompting on every fork. If this entry is "
-                "intentional, add it to ALLOWED_PERMISSIONS in tools/security_guards.py in the "
-                "same PR so the widening is explicit and reviewable."
-            )
-    for entry in ALLOWED_PERMISSIONS - set(allow):
-        # Not an error: settings may legitimately drop an entry. But an
-        # allowlist entry that no longer exists should be pruned.
-        print(f"note: allowlisted permission not present in settings.json: {entry!r}")
+def check_authority_and_plugin() -> None:
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    required = [
+        ".agents/skills/",
+        "untrusted",
+        "never fabricate",
+        "Portable Work mode",
+        "independent",
+    ]
+    for phrase in required:
+        if phrase.lower() not in agents.lower():
+            errors.append(f"AGENTS.md: missing authority/safety phrase {phrase!r}")
+    if (ROOT / ".claude" / "settings.json").exists():
+        errors.append(".claude/settings.json: pre-approved provider permissions are forbidden")
+    manifest = json.loads((ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    forbidden = {"apps", "mcpServers", "hooks"}.intersection(manifest)
+    if forbidden:
+        errors.append(f"plugin manifest must remain skills-only: {sorted(forbidden)}")
 
 
 def check_gitignore() -> None:
-    path = ROOT / ".gitignore"
-    try:
-        lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()]
-    except OSError as exc:
-        errors.append(f".gitignore: unreadable: {exc}")
-        return
+    lines = [line.strip() for line in (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()]
     rules = set(lines)
-    for rule in REQUIRED_IGNORE_RULES:
-        if rule not in rules:
-            errors.append(
-                f".gitignore: required personal-data rule missing: {rule!r}. "
-                "These rules keep fork users from committing personal data. If the rule moved "
-                "or was renamed intentionally, update REQUIRED_IGNORE_RULES in "
-                "tools/security_guards.py in the same PR."
-            )
+    for rule in sorted(REQUIRED_IGNORE_RULES - rules):
+        errors.append(f".gitignore: required private-data rule missing: {rule!r}")
     for line in lines:
-        if line.startswith("!") and line not in ALLOWED_IGNORE_NEGATIONS:
-            errors.append(
-                f".gitignore: negation rule not in the reviewed allowlist: {line!r}. "
-                "A negation re-includes a path an earlier rule excluded and can silently "
-                "re-expose personal data (a required ignore rule stays present but stops "
-                "taking effect). If this negation is intentional, add it to "
-                "ALLOWED_IGNORE_NEGATIONS in tools/security_guards.py in the same PR."
-            )
+        if line.startswith("!") and line not in ALLOWED_NEGATIONS:
+            errors.append(f".gitignore: unreviewed re-include rule: {line!r}")
+
+    probes = [
+        "profile/candidate-profile.md",
+        "salary_data.json",
+        "job_search_tracker.csv",
+        "documents/cv/private.pdf",
+        "documents/applications/example/outcome.md",
+        "documents/resume.docx",
+        "job_scraper/results.json",
+        "reports/private.html",
+        "upskill/private.json",
+        "dist/ai-job-search/skills/setup/SKILL.md",
+    ]
+    result = subprocess.run(
+        ["git", "check-ignore", "--no-index", *probes],
+        cwd=ROOT,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+    )
+    ignored = set(result.stdout.splitlines())
+    for probe in probes:
+        if probe not in ignored:
+            errors.append(f".gitignore: private probe is not ignored: {probe}")
+
+    public_probe = ".agents/skills/upskill/agents/openai.yaml"
+    public_result = subprocess.run(
+        ["git", "check-ignore", "--no-index", public_probe],
+        cwd=ROOT,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+    )
+    if public_result.returncode == 0:
+        errors.append(f".gitignore: native public metadata is ignored: {public_probe}")
 
 
-def check_package_manifests() -> None:
+def check_tracked_private_data(tracked: list[str]) -> None:
+    for path in tracked:
+        normalized = path.replace("\\", "/")
+        for prefix, allowed in PRIVATE_TRACKED_PREFIXES.items():
+            if normalized.startswith(prefix) and normalized not in allowed:
+                errors.append(f"tracked private-path content: {normalized}")
+    forbidden_exact = {
+        "job_search_tracker.csv",
+        "salary_data.json",
+        "gmail_sync.json",
+    }
+    for path in forbidden_exact.intersection(tracked):
+        errors.append(f"tracked private file: {path}")
+
+    for path in tracked:
+        normalized = path.replace("\\", "/")
+        if normalized.startswith("cv/") and normalized != "cv/main_example.tex":
+            errors.append(f"tracked generated CV content: {normalized}")
+        if normalized.startswith("cover_letters/"):
+            allowed = normalized in {
+                "cover_letters/cover.cls",
+                "cover_letters/cover_example.tex",
+            } or normalized.startswith("cover_letters/OpenFonts/fonts/")
+            if not allowed:
+                errors.append(f"tracked generated cover-letter content: {normalized}")
+
+
+def check_manifests() -> None:
     manifests = [
-        p for p in ROOT.glob(".agents/**/package.json") if "node_modules" not in p.parts
+        path for path in ROOT.glob(".agents/**/package.json") if "node_modules" not in path.parts
     ]
     if not manifests:
-        errors.append(".agents: no package.json files found - glob roots are wrong or the tree moved")
-    for manifest in manifests:
-        relpath = manifest.relative_to(ROOT)
+        errors.append("no portal CLI package manifests found")
+    for path in manifests:
+        rel = path.relative_to(ROOT).as_posix()
         try:
-            data = json.loads(manifest.read_text(encoding="utf-8"))
+            data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            errors.append(f"{relpath}: unreadable or invalid JSON: {exc}")
+            errors.append(f"{rel}: invalid JSON: {exc}")
             continue
-        if not isinstance(data, dict):
-            errors.append(f"{relpath}: top-level JSON value must be an object")
-            continue
-        scripts = data.get("scripts", {})
+        scripts = data.get("scripts", {}) if isinstance(data, dict) else {}
         if not isinstance(scripts, dict):
-            errors.append(f"{relpath}: scripts must be an object")
+            errors.append(f"{rel}: scripts must be an object")
             continue
-        bad = FORBIDDEN_SCRIPTS & set(scripts)
-        if bad:
-            errors.append(
-                f"{relpath}: lifecycle script(s) {sorted(bad)} are forbidden - they execute "
-                "arbitrary code during `bun install` on every fork user's machine."
-            )
+        if bad := FORBIDDEN_SCRIPTS.intersection(scripts):
+            errors.append(f"{rel}: forbidden lifecycle scripts: {sorted(bad)}")
         if "trustedDependencies" in data:
-            errors.append(
-                f"{relpath}: trustedDependencies is forbidden - it re-enables dependency "
-                "lifecycle scripts that bun blocks by default."
-            )
+            errors.append(f"{rel}: trustedDependencies is forbidden")
+
+
+def check_access_boundaries(public: list[str]) -> None:
+    portals = json.loads((ROOT / "config" / "portals.json").read_text(encoding="utf-8"))[
+        "portals"
+    ]
+    linkedin = next((item for item in portals if item.get("skill") == "linkedin-search"), None)
+    if not linkedin or linkedin.get("enabled") is not False:
+        errors.append("config/portals.json: linkedin-search must remain disabled")
+    linkedin_dir = ROOT / ".agents" / "skills" / "linkedin-search"
+    if any(path.startswith(".agents/skills/linkedin-search/cli/") for path in public):
+        errors.append("linkedin-search: automated CLI is forbidden")
+    linkedin_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in linkedin_dir.rglob("*.md")
+    )
+    if (
+        "jobs-guest" in linkedin_text
+        or "Do not run automated LinkedIn scraping" not in linkedin_text
+        or "user-controlled" not in linkedin_text
+    ):
+        errors.append("linkedin-search: missing user-controlled access boundary")
+
+    for path in ROOT.glob(".agents/skills/*-search/cli/src/**/*.ts"):
+        if "node_modules" in path.parts:
+            continue
+        if "Mozilla/5.0" in path.read_text(encoding="utf-8"):
+            errors.append(f"{path.relative_to(ROOT).as_posix()}: impersonating user agent")
+
+
+def check_secrets(tracked: list[str]) -> None:
+    for name in tracked:
+        path = ROOT / name
+        if not path.is_file() or path.stat().st_size > 2_000_000:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for label, pattern in SECRET_PATTERNS.items():
+            if pattern.search(text):
+                errors.append(f"{name}: possible {label}")
+
+
+def check_licence() -> None:
+    text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+    if "MIT License" not in text or "Copyright (c) 2026 Mads Lorentzen" not in text:
+        errors.append("LICENSE: original MIT licence or copyright notice changed")
 
 
 def main() -> int:
-    check_permissions()
+    tracked = public_files()
+    check_authority_and_plugin()
     check_gitignore()
-    check_package_manifests()
+    check_tracked_private_data(tracked)
+    check_manifests()
+    check_access_boundaries(tracked)
+    check_secrets(tracked)
+    check_licence()
     if errors:
         print(f"security_guards: {len(errors)} failure(s)")
-        for err in errors:
-            print(f"  - {err}")
+        for error in errors:
+            print(f"  - {error}")
         return 1
-    print(
-        "security_guards: OK (permissions allowlist, hooks allowlist, gitignore rules, "
-        "package manifests)"
-    )
+    print("security_guards: OK (authority, privacy, manifest, lifecycle, secret, licence guards)")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

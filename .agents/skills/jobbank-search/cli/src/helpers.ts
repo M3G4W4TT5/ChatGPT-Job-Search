@@ -2,7 +2,7 @@ import { parse as parseHtml } from "node-html-parser"
 
 export const BASE_URL = "https://jobbank.dk"
 
-export const USER_AGENT = "Mozilla/5.0 (compatible; jobbank-cli/1.0)"
+export const USER_AGENT = "AIJobSearchBot/1.0"
 
 export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
@@ -93,7 +93,7 @@ export async function rssFetch(params: Record<string, string | string[]>): Promi
     const body = await response.clone().text()
     if (response.status === 403 && /just a moment|cloudflare|cf-chl/i.test(body)) {
       throw new Error(
-        "Jobbank is blocking automated requests with Cloudflare bot protection. Skip this portal or use the WebSearch fallback."
+        "Jobbank is blocking automated requests with Cloudflare bot protection. Skip this portal or use an approved browser or web-research fallback."
       )
     }
     throw new Error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`)

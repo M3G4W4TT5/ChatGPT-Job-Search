@@ -6,15 +6,15 @@ CLI for [Akademikernes Jobbank](https://jobbank.dk) — Denmark's job portal for
 - **RSS feed**: `https://jobbank.dk/job/rss?{params}` — 100 items max, all search filters work
 - **Job detail**: `https://jobbank.dk/job/{id}/` — JSON-LD (`Schema.org JobPosting`) embedded in page HTML
 
-**Authentication**: None required. A browser User-Agent header is sent, but Jobbank may still block automated requests with Cloudflare bot protection. In that case the CLI exits with a clear error and callers should use a WebSearch fallback rather than retrying.
+**Authentication**: None required. A browser User-Agent header is sent, but Jobbank may still block automated requests with Cloudflare bot protection. In that case the CLI exits with a clear error and callers should use a web-search fallback rather than retrying.
 **Format**: RSS XML (search), HTML with embedded JSON-LD (detail).
 
 ---
 
 ## Installation
 
-```bash
-cd skills/jobbank-search/cli
+```powershell
+# First change to this skill's `cli` directory (the one containing package.json).
 bun install
 ```
 
@@ -185,7 +185,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 **Endpoint**: `GET https://jobbank.dk/job/rss?{params}`
 
-```bash
+```powershell
 bun run src/cli.ts search [flags]
 ```
 
@@ -223,7 +223,7 @@ The CLI fetches the RSS feed and parses each `<item>` as follows:
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts search --key python --location 2 --type 3 --limit 10
 bun run src/cli.ts search --key "data scientist" --remote helt
 bun run src/cli.ts search --industry 10331 --work-area 31 --format table
@@ -275,7 +275,7 @@ bun run src/cli.ts search --education 24 --suitable-for 2 --since 2026-03-01
 
 **Endpoint**: `GET https://jobbank.dk/job/{id}/`
 
-```bash
+```powershell
 bun run src/cli.ts detail <id> [--format json|plain]
 ```
 
@@ -285,7 +285,7 @@ The CLI fetches the HTML page and extracts the `<script type="application/ld+jso
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts detail 1234567
 bun run src/cli.ts detail 1234567 --format plain
 ```
@@ -342,7 +342,7 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 
 ```json
 { "error": "Job not found", "code": "NOT_FOUND" }
-{ "error": "Jobbank is blocking automated requests with Cloudflare bot protection. Skip this portal or use the WebSearch fallback.", "code": "API_ERROR" }
+{ "error": "Jobbank is blocking automated requests with Cloudflare bot protection. Skip this portal or use the web-search fallback.", "code": "API_ERROR" }
 { "error": "No JSON-LD found on job page", "code": "PARSE_ERROR" }
 { "error": "--key or at least one filter is required", "code": "MISSING_REQUIRED" }
 ```
@@ -353,13 +353,13 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 
 ### User-Agent
 
-All HTTP requests include a browser User-Agent header:
+All HTTP requests use a transparent project identity:
 
 ```
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+AIJobSearchBot/1.0
 ```
 
-This is not guaranteed to bypass Cloudflare bot protection. If Jobbank returns a Cloudflare challenge page, the CLI reports that condition and callers should skip the portal or use a WebSearch fallback.
+This is not intended to bypass Cloudflare or another access control. If Jobbank returns a challenge page, the CLI reports that condition and callers must skip the portal or use a policy-compliant official source or user-supplied export.
 
 ### RSS description parsing
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Notion sync"
+  short_description: "Sync an approved application pipeline with Notion."
+  default_prompt: "Use $notion-sync to preview an application-pipeline sync before any Notion write."

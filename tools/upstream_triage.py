@@ -9,10 +9,9 @@ a commit for portals the fork dropped can cherry-pick fine and still be wrong,
 and that silent-wrong case is worse than a conflict. So the report stops at
 ready-to-run cherry-pick lines; a human runs them.
 
-This is the commit-level companion to check_upstream_updates.py. That tool
-answers "which of my personalized framework files changed" (version stamps);
-this one answers "which upstream commits deserve my attention" (commit history).
-Two tools, two questions - each cross-references the other in its output.
+The OpenAI port intentionally removed mutable framework-version stamps. This
+report maps the original Claude workflow paths to their native skill equivalents
+so current upstream changes remain visible for intentional manual porting.
 
 Two signals drive the sort:
 
@@ -34,6 +33,28 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+
+
+PATH_MAP = {
+    ".claude/skills/job-scraper/SKILL.md": ".agents/skills/scrape/SKILL.md",
+    ".claude/skills/job-scraper/search-queries.md": ".agents/skills/scrape/assets/search-queries-template.md",
+    ".claude/skills/upskill/SKILL.md": ".agents/skills/upskill/SKILL.md",
+    ".claude/skills/job-application-assistant/SKILL.md": ".agents/skills/job-search-core/SKILL.md",
+    ".claude/skills/job-application-assistant/01-candidate-profile.md": ".agents/skills/setup/assets/profile-template/candidate-profile.md",
+    ".claude/skills/job-application-assistant/02-behavioral-profile.md": ".agents/skills/setup/assets/profile-template/behavioral-profile.md",
+}
+for _number, _name in (
+    ("03", "writing-style"),
+    ("04", "job-evaluation"),
+    ("05", "cv-templates"),
+    ("06", "cover-letter-templates"),
+    ("07", "interview-prep"),
+    ("08", "application-forms"),
+    ("09", "web-research"),
+):
+    PATH_MAP[f".claude/skills/job-application-assistant/{_number}-{_name}.md"] = (
+        f".agents/skills/job-search-core/references/{_number}-{_name}.md"
+    )
 
 
 def git(*args: str) -> str:
@@ -70,6 +91,11 @@ def files_touched(sha: str) -> list[str]:
 
 def path_exists(path: str) -> bool:
     # ls-tree against HEAD is authoritative for "does this fork still ship it".
+    if path.startswith(".claude/commands/") and path.endswith(".md"):
+        name = path.rsplit("/", 1)[-1][:-3]
+        path = f".agents/skills/{name}/SKILL.md"
+    else:
+        path = PATH_MAP.get(path, path)
     r = subprocess.run(
         ["git", "cat-file", "-e", f"HEAD:{path}"], capture_output=True
     )
@@ -188,7 +214,7 @@ def main() -> int:
         lines.append("")
         lines.append("<details><summary>Ready-to-run cherry-picks (review each before running)</summary>")
         lines.append("")
-        lines.append("```bash")
+        lines.append("```powershell")
         for short, sha, subj, _ in review:
             lines.append(f"git cherry-pick {sha}  # {subj}")
         lines.append("```")
@@ -218,8 +244,8 @@ def main() -> int:
 def _print_crossref(ref: str) -> None:
     print()
     print(
-        "_For personalized-file version stamps (which methodology files changed), "
-        f"run `python tools/check_upstream_updates.py --remote {ref.split('/')[0]}`._"
+        "_Inspect a candidate commit before porting it with "
+        f"`git show --stat {ref}` and review mapped native skill paths manually._"
     )
 
 

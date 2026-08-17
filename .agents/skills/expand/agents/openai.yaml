@@ -1,0 +1,4 @@
+interface:
+  display_name: "Expand profile"
+  short_description: "Discover candidate competencies without overstating them."
+  default_prompt: "Use $expand to find evidence-backed additions to my private candidate profile."

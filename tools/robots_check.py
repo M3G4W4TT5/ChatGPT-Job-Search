@@ -1,31 +1,26 @@
 #!/usr/bin/env python3
-"""Decide whether the browser-header curl retry in 09-web-research.md may run.
+"""Check whether one transparent local fetch is permitted by robots.txt.
 
-The retry exists to get past bot-filtering firewalls on sites whose robots.txt
-permits access. It is never used to override a site that has said no.
-
-WebFetch identifies itself as Claude-User and honors robots.txt, so a 403 has
-two very different causes: a WAF default on a site whose published policy
-allows access, or a site that has actually declined. This tells them apart.
+The local workflow identifies itself as AIJobSearchBot, honors robots.txt, and
+never retries with an impersonating browser identity after an access block.
 
 Rules implemented (RFC 9309), deliberately on the cautious side:
   * longest-match wins; on equal specificity Disallow wins
-  * a Disallow for either "*" or "Claude-User" blocks the retry
+  * a Disallow for either "*" or "AIJobSearchBot" blocks the fetch
   * blank lines inside a record do not end it (Python's robotparser drops
     rules in that case, which fails open - see tests)
   * 404 means no published policy, which is permission
   * any other failure to read robots.txt leaves permission unconfirmed,
-    and the retry does not happen
+    and the fetch does not happen
 
-Usage:  python3 tools/robots_check.py <url>
-Exit 0 = the retry may proceed. Exit 1 = do not retry; go to escalation step 3.
+Usage:  python tools/robots_check.py <url>
+Exit 0 = one honest fetch may proceed. Exit 1 = do not fetch; use another source.
 """
 
 import re, subprocess, sys
 from urllib.parse import urlsplit, unquote
 
-BROWSER = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-           '(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
+HONEST_AGENT = 'AIJobSearchBot'
 
 def _fetch(url, ua):
     """curl, not urllib: some hosts (jobup.ch) hang urllib indefinitely while
@@ -113,29 +108,29 @@ def gate(url):
         path += '?' + parts.query
     robots = f'{parts.scheme}://{parts.netloc}/robots.txt'
     body, last = None, 'no attempt'
-    for ua in ('Claude-User', BROWSER):
-        try:
-            text, code = _fetch(robots, ua)
-        except Exception as e:
-            last = type(e).__name__; continue
+    try:
+        text, code = _fetch(robots, HONEST_AGENT)
+    except Exception as e:
+        last = type(e).__name__
+    else:
         if code == 404:
             return 0, 'ALLOWED - no robots.txt published'
-        if code == 200:
-            if not is_robots_body(text):
-                last = 'HTTP 200 but the body is not a robots.txt'
-                continue
-            body = text; break
-        last = 'HTTP %d' % code
+        if code == 200 and is_robots_body(text):
+            body = text
+        elif code == 200:
+            last = 'HTTP 200 but the body is not a robots.txt'
+        else:
+            last = 'HTTP %d' % code
     if body is None:
-        return 1, 'UNCONFIRMED (%s) - do not retry, go to step 3' % last
-    for a in ('Claude-User', '*'):
+        return 1, 'UNCONFIRMED (%s) - do not fetch; use another source' % last
+    for a in (HONEST_AGENT, '*'):
         if not allowed(body, a, path):
-            return 1, f'DISALLOWED for {a} - do not retry, go to step 3'
+            return 1, f'DISALLOWED for {a} - do not fetch; use another source'
     return 0, 'ALLOWED - robots.txt permits this path'
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('usage: python3 tools/robots_check.py <url>', file=sys.stderr)
+        print('usage: python tools/robots_check.py <url>', file=sys.stderr)
         sys.exit(2)
     rc, msg = gate(sys.argv[1])
     print(msg)

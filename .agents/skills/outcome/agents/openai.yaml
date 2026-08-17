@@ -1,0 +1,4 @@
+interface:
+  display_name: "Record outcome"
+  short_description: "Record application outcomes and preserve private evidence."
+  default_prompt: "Use $outcome to record this application update and propose the private state changes."

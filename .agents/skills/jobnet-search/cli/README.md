@@ -10,8 +10,8 @@ CLI for the [Jobnet.dk](https://jobnet.dk) Danish government job portal API.
 
 ## Installation
 
-```bash
-cd skills/jobnet-search/cli
+```powershell
+# First change to this skill's `cli` directory (the one containing package.json).
 bun install
 ```
 
@@ -57,7 +57,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 **Endpoint**: `GET /FindJob/Search`
 
-```bash
+```powershell
 bun run src/cli.ts search [flags]
 ```
 
@@ -82,18 +82,18 @@ bun run src/cli.ts search [flags]
 
 ### Example
 
-```bash
-bun run src/cli.ts search \
-  --search-string "sygeplejerske" \
-  --region HovedstadenOgBornholm \
-  --work-hours FullTime \
-  --duration Permanent \
-  --per-page 5 \
+```powershell
+bun run src/cli.ts search `
+  --search-string "sygeplejerske" `
+  --region HovedstadenOgBornholm `
+  --work-hours FullTime `
+  --duration Permanent `
+  --per-page 5 `
   --format table
 
-bun run src/cli.ts search \
-  --postal-code 8000 \
-  --radius 25 \
+bun run src/cli.ts search `
+  --postal-code 8000 `
+  --radius 25 `
   --per-page 10
 ```
 
@@ -163,7 +163,7 @@ bun run src/cli.ts search \
 
 **Endpoint**: `GET /FindJob/JobAdDetails/{id}`
 
-```bash
+```powershell
 bun run src/cli.ts detail <id> [--format json|plain]
 ```
 
@@ -173,7 +173,7 @@ By default the CLI passes `incrementViews=false` to avoid polluting view counts.
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be
 bun run src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
 ```
@@ -251,7 +251,7 @@ bun run src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
 
 **Endpoint**: `GET /OccupationSearch`
 
-```bash
+```powershell
 bun run src/cli.ts occupations --search-string <text> [flags]
 ```
 
@@ -267,7 +267,7 @@ Use this command to find occupation identifiers (ESCO concept URIs) to pass as f
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts occupations --search-string "sygeplejerske" --per-page 5
 ```
 
@@ -297,7 +297,7 @@ bun run src/cli.ts occupations --search-string "sygeplejerske" --per-page 5
 
 **Endpoint**: `GET /FindJob/GetTypeaheadSuggestions`
 
-```bash
+```powershell
 bun run src/cli.ts suggestions --query <text> [flags]
 ```
 
@@ -313,7 +313,7 @@ Returns autocomplete strings for the search box — useful for exploring valid D
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts suggestions --query "syge"
 bun run src/cli.ts suggestions --query "ingeniør" --limit 5
 ```

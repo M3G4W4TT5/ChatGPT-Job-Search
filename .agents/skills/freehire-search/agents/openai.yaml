@@ -1,0 +1,4 @@
+interface:
+  display_name: "Freehire search"
+  short_description: "Search current technical roles through the Freehire API."
+  default_prompt: "Use $freehire-search to search Freehire for the specified role and market."

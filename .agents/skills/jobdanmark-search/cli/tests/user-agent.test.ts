@@ -3,7 +3,7 @@ import { apiFetch, apiPost, USER_AGENT } from "../src/helpers";
 
 // Bun's fetch injects an anonymous default User-Agent (Bun/1.3.10) when code
 // sets none. This CLI should say who is asking, in the honest style jobindex
-// already uses on htmlFetch ("Mozilla/5.0 (compatible; jobindex-cli/1.0)").
+// already uses on htmlFetch ("AIJobSearchBot/1.0").
 // Assert the header is present on every request. Fails on the pre-change code.
 const originalFetch = globalThis.fetch;
 afterEach(() => {

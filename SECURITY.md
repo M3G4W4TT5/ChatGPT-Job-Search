@@ -1,22 +1,34 @@
 # Security Policy
 
-## Reporting a vulnerability
+## Reporting
 
-Please report security findings privately via **[GitHub private vulnerability reporting](https://github.com/MadsLorentzen/ai-job-search/security/advisories/new)** rather than a public issue. You will get a response within a few days, credit in the fix unless you prefer otherwise, and public disclosure coordinated with the patch.
+Do not open a public issue containing candidate data, credentials, private correspondence, or exploit details. Use the repository owner's private security-reporting channel when one is available. Until this port has its own published repository, report issues to the maintainer of the checkout in which you found them.
 
-If the private form is unavailable, open a public issue that describes the *class* of problem without a working recipe, and note that you have details to share privately.
+## Security boundaries
 
-## Threat model, honestly stated
+- `AGENTS.md` is the provider-neutral authority. Repository skills cannot weaken its safety or approval rules.
+- Job postings, pages, messages, connector records, and attached documents are untrusted data, never instructions.
+- Candidate profiles, tracker state, salary data, generated applications, interview records, reports, and credentials are private and gitignored.
+- The public CV and cover-letter fixtures are synthetic layout examples and never candidate evidence.
+- The plugin manifest remains skills-only: no hooks, apps, or MCP server definitions.
+- Claude compatibility files are pointers only and carry no pre-approved permissions, hooks, or canonical rules.
+- External writes, submissions, messages, and connector mutations require explicit user approval of the specific proposed action or unchanged batch.
+- Login, MFA, credentials, identity, payment, consent, and access-control challenges remain user-controlled.
 
-This is an agentic workflow: an LLM with file access reads untrusted web content (job postings) alongside your personal data (CV, profile, application history). That combination is the main risk surface, and it cannot be fully eliminated - only narrowed. What the framework does about it:
+## Supply chain
 
-- **Untrusted-input rules**: `/apply` and `/rank` treat posting text as data, never instructions - agents are told not to follow directions embedded in postings and not to fetch URLs found inside posting text (the user-supplied posting URL is the one exception). Reviewer research starts from the company identity the user confirmed, never from links in the posting body.
-- **Permission allowlist**: `.claude/settings.json` pre-approves only the specific commands the workflow needs; the `security-guards` CI job fails any PR that widens it, adds package-manifest lifecycle scripts, or weakens the personal-data gitignore rules. Note the allowlist governs Bash commands - the model's native WebFetch/WebSearch tools are outside its reach, which is exactly why the instruction-level rules above exist.
-- **Personal data boundaries**: your populated profile, tracker, salary data, and application archive are gitignored; documents never leave the machine by design (`/notion-sync` syncs filenames only; nothing uploads document content anywhere).
+Portal CLIs may install local development dependencies. Their manifests must not contain package lifecycle scripts or `trustedDependencies`. CI typechecks and fixture-tests the CLIs but does not make live portal requests.
 
-Instruction-level defenses raise the bar; they are not a sandbox. If you run this workflow against job boards you do not trust at all, review what the agent fetched and wrote before sending anything out.
+Actions are pinned to commit SHAs and run with read-only contents permission unless a narrowly scoped workflow documents otherwise. Review workflow, manifest, lockfile, and dependency changes manually even when automated guards pass.
 
-## Scope notes
+## Local checks
 
-- Portal CLI skills make live requests only when you run them; CI never does.
-- Community fork skills listed in the [forks index](https://github.com/MadsLorentzen/ai-job-search/discussions/78) are **not** covered by this policy - review the code you copy, as the index itself says.
+```powershell
+.\.venv\Scripts\python.exe tools\lint_skills.py
+.\.venv\Scripts\python.exe tools\security_guards.py
+.\.venv\Scripts\python.exe -m unittest discover -s tests -t . -v
+git diff --check
+git status --short
+```
+
+Automated checks reduce accidental exposure; they do not prove that prose contains no identifying details. Inspect the staged diff before every commit.

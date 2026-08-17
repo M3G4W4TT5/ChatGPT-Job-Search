@@ -1,26 +1,11 @@
 ---
 name: jobdanmark-search
-version: 1.0.0
-description: >
-  Make sure to use this skill whenever the user mentions anything related to Danish
-  job listings, job search in Denmark, finding work in Denmark, or job vacancies on
-  Jobdanmark — even if they don't explicitly mention jobdanmark.dk. Also invoke this
-  skill for questions about specific Danish job categories, municipalities, job types,
-  or salaries in a job-search context. Trigger phrases include:
-  danish jobs, jobs in denmark, find job denmark, job search denmark, danish job listings,
-  jobdanmark, job opslag, find job, jobsøgning, ledige stillinger, stillingsopslag,
-  job i Danmark, fuldtidsjob, deltidsjob, studiejob, praktikplads, elev, fleksjob,
-  IT job denmark, sygeplejersker job, håndværker job, ingeniør job, pædagog job,
-  kontor job, leder job, salg job, hotel job, kirke job, job aarhus, job københavn,
-  job odense, job aalborg, job sjælland, job jylland, job fyn, jobkategorier denmark,
-  ledige job, ansøgningsfrist, søg job, job opslaget, jobopslag, danish vacancies,
-  work in denmark, employment denmark, job denmark, jobs near me denmark,
-  apprentice denmark, internship denmark, part-time denmark, full-time denmark.
-context: fork
-enabled: false  # Danish demo portal - ships opt-in; /setup enables it when your market is Denmark, or set true here yourself
-allowed-tools: Bash(bun run .agents/skills/jobdanmark-search/cli/src/cli.ts *)
+description: "Search or inspect Jobdanmark listings. Use for Danish vacancies by keyword, category, municipality, employment type, or location."
 ---
 
+
+
+Before starting, locate and read the nearest repository or plugin-root `AGENTS.md`, then read `../job-search-core/references/surface-modes.md`. Interpret the user's prompt, named mode, URLs, and attachments as the skill input; do not rely on slash-command variables or a local shell unless local repo mode is verified. In local mode, resolve the directory containing this SKILL.md, Push-Location to it before running relative CLI examples, and Pop-Location when finished; this works in both a repository checkout and a packaged plugin.
 # Jobdanmark Search Skill
 
 Access live Danish job listings from the Jobdanmark.dk public API. No authentication needed.
@@ -42,8 +27,8 @@ Invoke this skill when the user wants to:
 
 ### Search job listings
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search [flags]
+```powershell
+bun run cli/src/cli.ts search [flags]
 ```
 
 Key flags:
@@ -62,8 +47,8 @@ Key flags:
 
 ### Full job detail
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts detail <slug> [--format json|plain]
+```powershell
+bun run cli/src/cli.ts detail <slug> [--format json|plain]
 ```
 
 `slug` is the URL path segment returned as `slug` in `search` results (e.g. `it-chef-soeges-til-rah`).
@@ -71,24 +56,24 @@ Returns full structured job data from the job page. The CLI prefers Schema.org J
 
 ### List categories with live counts
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts categories [--format json|table|plain]
+```powershell
+bun run cli/src/cli.ts categories [--format json|table|plain]
 ```
 
 Returns all 10 job categories with current live job counts. Useful for giving the user an overview of the job market.
 
 ### Autocomplete job titles and categories
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts autocomplete --query "<text>" [--limit <n>]
+```powershell
+bun run cli/src/cli.ts autocomplete --query "<text>" [--limit <n>]
 ```
 
 Use this to resolve search terms into precise job title IDs (`--jobtitle-id`) or category IDs (`--category`) for `search`. The `value` field in results is the ID to pass to `search`.
 
 ### Suggest locations
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts locations --query "<text>" [--limit <n>]
+```powershell
+bun run cli/src/cli.ts locations --query "<text>" [--limit <n>]
 ```
 
 Returns matching municipalities, zip codes, and regions. Use `value` from results as `--municipality` or `--zip` in `search`.
@@ -116,14 +101,14 @@ Returns matching municipalities, zip codes, and regions. Use `value` from result
 
 **Resolve locations first.** Use `locations` to find the correct municipality name or zip code before passing them to `search`:
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts locations --query "Aarhus" --format plain
+```powershell
+bun run cli/src/cli.ts locations --query "Aarhus" --format plain
 ```
 
 **Resolve job titles for precision.** Use `autocomplete` to get the exact job title ID when the user wants a specific role:
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts autocomplete --query "sygeplejerske" --format plain
+```powershell
+bun run cli/src/cli.ts autocomplete --query "sygeplejerske" --format plain
 ```
 
 **Natural workflow: `search` → `detail`.**
@@ -142,66 +127,66 @@ bun run .agents/skills/jobdanmark-search/cli/src/cli.ts autocomplete --query "sy
 
 ### IT jobs in Copenhagen
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search \
-  --category 227978 \
-  --municipality "København" \
-  --job-type fuldtid \
+```powershell
+bun run cli/src/cli.ts search `
+  --category 227978 `
+  --municipality "København" `
+  --job-type fuldtid `
   --format table
 ```
 
 ### Nursing jobs anywhere in Denmark
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search \
-  --text "sygeplejerske" \
-  --category 227975 \
+```powershell
+bun run cli/src/cli.ts search `
+  --text "sygeplejerske" `
+  --category 227975 `
   --format table
 ```
 
 ### Student jobs in Aarhus
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search \
-  --municipality "Aarhus" \
-  --job-type studiejob \
+```powershell
+bun run cli/src/cli.ts search `
+  --municipality "Aarhus" `
+  --job-type studiejob `
   --format table
 ```
 
 ### What job categories are most active right now?
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts categories --format table
+```powershell
+bun run cli/src/cli.ts categories --format table
 ```
 
 ### Full details for a specific job posting
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts detail it-chef-soeges-til-rah --format plain
+```powershell
+bun run cli/src/cli.ts detail it-chef-soeges-til-rah --format plain
 ```
 
 ### Find jobs in zip code 8000
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search --zip 8000 --format table
+```powershell
+bun run cli/src/cli.ts search --zip 8000 --format table
 ```
 
 ### What electrician jobs are available?
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search \
-  --text "elektriker" \
-  --category 227973 \
-  --job-type "fuldtid,deltid" \
+```powershell
+bun run cli/src/cli.ts search `
+  --text "elektriker" `
+  --category 227973 `
+  --job-type "fuldtid,deltid" `
   --format table
 ```
 
 ### Apprentice positions in all of Denmark
 
-```bash
-bun run .agents/skills/jobdanmark-search/cli/src/cli.ts search \
-  --job-type elev \
-  --page 1 \
+```powershell
+bun run cli/src/cli.ts search `
+  --job-type elev `
+  --page 1 `
   --format table
 ```
 

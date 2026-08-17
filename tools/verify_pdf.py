@@ -19,12 +19,13 @@ def run_tool(command):
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="strict",
         ).stdout
     except FileNotFoundError as exc:
         raise VerificationError(
             f"required command '{command[0]}' was not found. "
-            "Install poppler-utils (macOS: brew install poppler, "
-            "Debian/Ubuntu: apt install poppler-utils, Windows: choco install poppler)"
+            "Install Poppler using the platform-specific guidance in SETUP.md"
         ) from exc
     except subprocess.CalledProcessError as exc:
         detail = (exc.stderr or "").strip() or (exc.stdout or "").strip()
@@ -62,6 +63,11 @@ def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=()):
         raise VerificationError(
             f"text layer has {len(extracted_text)} character(s); expected at least {min_chars}"
         )
+    for marker in ("(cid:", "\ufffd"):
+        if marker in extracted_text:
+            raise VerificationError(
+                f"text layer contains an ATS-corruption marker: {marker!r}"
+            )
 
     for required in required_text:
         if normalize_text(required) not in extracted_text:

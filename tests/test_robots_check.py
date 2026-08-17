@@ -5,7 +5,7 @@ matching the repo's CI policy of making no live portal requests.
 
 The cases marked FAIL-OPEN REGRESSION are the ones Python's own
 urllib.robotparser gets wrong. They are pinned here because getting them wrong
-means the browser-header retry runs against a site that said no, which is the
+  means a local fetch runs against a site that said no, which is the
 exact boundary this tool exists to hold.
 """
 
@@ -73,21 +73,21 @@ class TestPathRules(unittest.TestCase):
 
 
 class TestAgentSelection(unittest.TestCase):
-    def test_named_claude_user_opt_out_is_honored(self):
-        body = "User-agent: Claude-User\nDisallow: /\n\nUser-agent: *\nAllow: /\n"
-        self.assertFalse(allowed(body, "Claude-User", "/a"))
+    def test_named_job_search_bot_opt_out_is_honored(self):
+        body = "User-agent: AIJobSearchBot\nDisallow: /\n\nUser-agent: *\nAllow: /\n"
+        self.assertFalse(allowed(body, "AIJobSearchBot", "/a"))
         self.assertTrue(allowed(body, "*", "/a"))
 
     def test_agent_match_is_case_insensitive(self):
-        body = "User-agent: CLAUDE-USER\nDisallow: /x\n"
-        self.assertFalse(allowed(body, "claude-user", "/x"))
+        body = "User-agent: AIJOBSEARCHBOT\nDisallow: /x\n"
+        self.assertFalse(allowed(body, "aijobsearchbot", "/x"))
 
     def test_falls_back_to_star_when_agent_absent(self):
-        self.assertFalse(allowed(JOBUP, "Claude-User", "/api/v1"))
+        self.assertFalse(allowed(JOBUP, "AIJobSearchBot", "/api/v1"))
 
     def test_multiple_agents_share_one_ruleset(self):
-        body = "User-agent: A\nUser-agent: Claude-User\nDisallow: /z\n"
-        self.assertFalse(allowed(body, "Claude-User", "/z"))
+        body = "User-agent: A\nUser-agent: AIJobSearchBot\nDisallow: /z\n"
+        self.assertFalse(allowed(body, "AIJobSearchBot", "/z"))
         self.assertFalse(allowed(body, "A", "/z"))
 
 
@@ -108,7 +108,7 @@ class TestSoftTwoHundred(unittest.TestCase):
 
     Found by adversarial review, not inspection. A misconfigured host answering
     /robots.txt with an HTML error page at status 200 parses to zero rules, and
-    zero rules read as "allowed" - so the browser retry ran on permission that
+    zero rules read as "allowed" - so a local fetch ran on permission that
     was never given. FAIL-OPEN REGRESSION.
     """
 

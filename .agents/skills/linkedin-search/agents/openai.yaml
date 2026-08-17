@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinkedIn search"
+  short_description: "Search current public LinkedIn job listings by market."
+  default_prompt: "Use $linkedin-search to search public LinkedIn job listings for this role and location."

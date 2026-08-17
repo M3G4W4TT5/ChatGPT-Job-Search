@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interview prep"
+  short_description: "Prepare an evidence-grounded interview pack and practice."
+  default_prompt: "Use $interview to prepare me for this application and interview stage."

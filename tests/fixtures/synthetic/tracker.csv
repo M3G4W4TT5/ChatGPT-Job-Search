@@ -1,0 +1,2 @@
+company,role,sector,fit_score,status,date,cv_file,cover_letter_file,source,notes,deadline
+Northstar Relay Labs,Platform Automation Engineer,Software,87,applied,2099-01-05,,,https://jobs.example.test/northstar/platform-automation,portable synthetic run; private generated artifacts intentionally not tracked,2099-12-31

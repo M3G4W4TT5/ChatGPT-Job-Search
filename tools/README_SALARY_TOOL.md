@@ -2,9 +2,9 @@
 
 ## What is this?
 
-The salary lookup tool (`salary_lookup.py`) lets you benchmark company salaries against a baseline from your own data. It's used during the `/apply` workflow to show how a company's compensation compares to market rates.
+The salary lookup tool (`salary_lookup.py`) lets you benchmark company salaries against a baseline from your own data. It's used during the the apply skill workflow to show how a company's compensation compares to market rates.
 
-**This tool is optional.** If you don't have salary data, the salary step is simply skipped during `/apply`.
+**This tool is optional.** If you don't have salary data, the salary step is simply skipped during the apply skill.
 
 ## How it works
 
@@ -67,15 +67,16 @@ Create the file by hand with data from any source: union statistics, Glassdoor, 
 
 If you have salary data in an Excel file:
 
-```bash
-pip install openpyxl
-python3 tools/convert_salary_excel.py path/to/salary-data.xlsx \
-  --source "My Salary Data 2025" \
-  --baseline 100 \
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install openpyxl
+.\.venv\Scripts\python.exe tools\convert_salary_excel.py path\to\salary-data.xlsx `
+  --source "My Salary Data 2025" `
+  --baseline 100 `
   --baseline-desc "Index 100 = median salary"
 ```
 
-On Windows, use `py` if that is how Python is exposed on your PATH. If your system uses `python` instead of `python3`, substitute that in the examples.
+Use `py` instead of `python` for the first command if that is how Python is exposed on your Windows PATH. The environment remains project-local.
 
 The converter auto-detects the Excel layout:
 - Looks for a "Company"/"Firma" column and an optional "City"/"By" column
@@ -108,17 +109,17 @@ Start with an empty template and add companies as you research them:
 
 ## Usage
 
-```bash
-python3 salary_lookup.py "Novo Nordisk"
-python3 salary_lookup.py "Ørsted" --city "Fredericia"
-python3 salary_lookup.py "COWI" --json
-python3 salary_lookup.py --list-all
-python3 salary_lookup.py --validate      # pre-flight check your salary_data.json
+```powershell
+.\.venv\Scripts\python.exe salary_lookup.py "Novo Nordisk"
+.\.venv\Scripts\python.exe salary_lookup.py "Ørsted" --city "Fredericia"
+.\.venv\Scripts\python.exe salary_lookup.py "COWI" --json
+.\.venv\Scripts\python.exe salary_lookup.py --list-all
+.\.venv\Scripts\python.exe salary_lookup.py --validate  # pre-flight check
 ```
 
 ## Important notes
 
 - The data file (`salary_data.json`) is **excluded from git** (see `.gitignore`). Your salary data may be proprietary or confidential.
-- If the data file is missing, `salary_lookup.py` exits with a helpful error message and the `/apply` workflow skips the salary benchmark step.
+- If the data file is missing, `salary_lookup.py` exits with a helpful error message and the the apply skill workflow skips the salary benchmark step.
 - The fuzzy matcher handles Danish company name variations: legal suffixes, Nordic characters, anglicized spellings, and partial matches.
 - `--validate` checks your data file for malformed category values and duplicate company names and prints a report, without performing a lookup.

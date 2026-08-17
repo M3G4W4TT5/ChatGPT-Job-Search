@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rank jobs"
+  short_description: "Score jobs honestly against verified candidate evidence."
+  default_prompt: "Use $rank to score the supplied or stored jobs against my verified profile."

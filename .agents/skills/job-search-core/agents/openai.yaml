@@ -1,0 +1,6 @@
+interface:
+  display_name: "Job search core"
+  short_description: "Apply the shared safety, grounding, and workflow contracts."
+  default_prompt: "Use $job-search-core to apply the shared job-search safety and grounding contracts."
+policy:
+  allow_implicit_invocation: false

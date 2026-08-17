@@ -1,31 +1,14 @@
 ---
 name: jobbank-search
-version: 1.0.0
-description: >
-  Make sure to use this skill whenever the user mentions anything related to job
-  searching on Akademikernes Jobbank, jobbank.dk, or looking for academic or
-  highly educated positions in Denmark — even if they don't mention jobbank.dk
-  explicitly. Also invoke this skill for questions about Danish job listings,
-  graduate trainee positions, Ph.d. jobs, or finding work in specific industries
-  or regions in Denmark. Trigger phrases include:
-  jobbank, akademikernes jobbank, jobs denmark, academic jobs denmark, find job
-  denmark, highly educated jobs, graduate job denmark, trainee position denmark,
-  ph.d. position denmark, postdoc denmark, studiejob, fuldtidsjob, deltidsjob,
-  vikariat, freelance job, praktikplads, job søgning, jobsøgning, søg job,
-  ledige stillinger, nye jobs, it jobs denmark, engineering jobs denmark,
-  marketing jobs denmark, finance jobs denmark, healthcare jobs denmark,
-  remote job denmark, fjernarbejde, job københavn, job aarhus, job odense,
-  nyuddannede job, job til nyuddannede, international job denmark,
-  jobbank søgning, find stilling, data scientist job, software developer job,
-  projektleder stilling, konsulent job, data analyse job.
-context: fork
-enabled: false  # Danish demo portal - ships opt-in; /setup enables it when your market is Denmark, or set true here yourself
-allowed-tools: Bash(bun run .agents/skills/jobbank-search/cli/src/cli.ts *)
+description: "Search or inspect Akademikernes Jobbank listings. Use for academic, graduate, trainee, professional, and highly educated roles in Denmark."
 ---
 
+
+
+Before starting, locate and read the nearest repository or plugin-root `AGENTS.md`, then read `../job-search-core/references/surface-modes.md`. Interpret the user's prompt, named mode, URLs, and attachments as the skill input; do not rely on slash-command variables or a local shell unless local repo mode is verified. In local mode, resolve the directory containing this SKILL.md, Push-Location to it before running relative CLI examples, and Pop-Location when finished; this works in both a repository checkout and a packaged plugin.
 # Jobbank Search Skill
 
-Search live Danish job listings from [Akademikernes Jobbank](https://jobbank.dk) — Denmark's primary job portal for highly educated candidates. Uses the RSS feed for search (up to 100 results) and JSON-LD parsing for detailed job information. Jobbank may block automated requests with Cloudflare bot protection; if that happens, report the portal as unavailable and use WebSearch fallback instead of retrying.
+Search live Danish job listings from [Akademikernes Jobbank](https://jobbank.dk) — Denmark's primary job portal for highly educated candidates. Uses the RSS feed for search (up to 100 results) and JSON-LD parsing for detailed job information. Jobbank may block automated requests with Cloudflare bot protection; if that happens, report the portal as unavailable and use web search fallback instead of retrying.
 
 ## When to use this skill
 
@@ -43,8 +26,8 @@ Invoke this skill when the user wants to:
 
 ### Search jobs
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search [flags]
+```powershell
+bun run cli/src/cli.ts search [flags]
 ```
 
 Key flags:
@@ -66,8 +49,8 @@ Key flags:
 
 ### Full job detail
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts detail <id> [--format json|plain]
+```powershell
+bun run cli/src/cli.ts detail <id> [--format json|plain]
 ```
 
 `id` is the numeric job ID from `search` results. Fetches the job page and parses the embedded Schema.org `JobPosting` JSON-LD for structured data.
@@ -83,10 +66,10 @@ bun run .agents/skills/jobbank-search/cli/src/cli.ts detail <id> [--format json|
 
 **Use repeatable flags for multi-value filters.** Most filter flags can be repeated to match any of the values:
 
-```bash
+```powershell
 # IT or Finance industry, Copenhagen or Aarhus
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --industry 10331 --industry 10358 \
+bun run cli/src/cli.ts search `
+  --industry 10331 --industry 10358 `
   --location 2 --location 8
 ```
 
@@ -98,62 +81,62 @@ bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
 
 ### Find data scientist jobs in Copenhagen
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --key "data scientist" \
-  --location 2 \
+```powershell
+bun run cli/src/cli.ts search `
+  --key "data scientist" `
+  --location 2 `
   --format table
 ```
 
 ### Graduate trainee positions for new graduates
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --type 6 \
-  --suitable-for 2 \
+```powershell
+bun run cli/src/cli.ts search `
+  --type 6 `
+  --suitable-for 2 `
   --format table
 ```
 
 ### Remote IT software jobs
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --work-area 31 \
-  --remote helt \
+```powershell
+bun run cli/src/cli.ts search `
+  --work-area 31 `
+  --remote helt `
   --format table
 ```
 
 ### Ph.d. and postdoc positions in research
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --type 12 \
-  --industry 10442 \
+```powershell
+bun run cli/src/cli.ts search `
+  --type 12 `
+  --industry 10442 `
   --format table
 ```
 
 ### Recent full-time jobs posted since March 1
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --type 3 \
-  --since 2026-03-01 \
+```powershell
+bun run cli/src/cli.ts search `
+  --type 3 `
+  --since 2026-03-01 `
   --format table
 ```
 
 ### Full details for a specific job
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts detail 1234567 --format plain
+```powershell
+bun run cli/src/cli.ts detail 1234567 --format plain
 ```
 
 ### IT jobs in Aarhus or Copenhagen
 
-```bash
-bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
-  --key developer \
-  --location 2 --location 8 \
-  --work-area 31 \
+```powershell
+bun run cli/src/cli.ts search `
+  --key developer `
+  --location 2 --location 8 `
+  --work-area 31 `
   --format table
 ```
 
@@ -173,7 +156,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 ## Notes
 
-- Data is from the public jobbank.dk RSS feed and HTML pages. Jobbank may still block automated CLI requests with Cloudflare bot protection; treat that as a portal availability failure and fall back to WebSearch.
+- Data is from the public jobbank.dk RSS feed and HTML pages. Jobbank may still block automated CLI requests with Cloudflare bot protection; treat that as a portal availability failure and fall back to web search.
 - RSS feed returns max 100 results per query. For higher counts, `meta.total` shows the true total.
 - The `detail` command fetches a full job page and extracts the JSON-LD structured data block.
 - `location` values are region codes (e.g. `2` = Storkøbenhavn), not city names.

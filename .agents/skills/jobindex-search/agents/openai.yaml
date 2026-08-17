@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jobindex search"
+  short_description: "Search current Danish vacancies published on Jobindex."
+  default_prompt: "Use $jobindex-search to search Jobindex for the specified Danish jobs."

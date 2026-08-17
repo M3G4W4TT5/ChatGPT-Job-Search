@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add portal"
+  short_description: "Scaffold and validate a native job-portal search skill."
+  default_prompt: "Use $add-portal to scaffold and validate a search skill for this job portal."

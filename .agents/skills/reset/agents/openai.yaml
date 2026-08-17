@@ -1,0 +1,6 @@
+interface:
+  display_name: "Reset private data"
+  short_description: "Safely preview and clear selected private job-search data."
+  default_prompt: "Use $reset to preview the selected private data before asking me to confirm deletion."
+policy:
+  allow_implicit_invocation: false

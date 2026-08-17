@@ -4,16 +4,25 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Releases are vetted checkpoints of `master`. If you maintain a personalized fork,
-prefer updating to a tagged release over pulling raw `master` (see
-[SETUP.md, section 8](SETUP.md#8-pulling-upstream-updates-into-your-fork)). The
-`framework_version` markers on methodology files tell you which of your customized
-files a release touched; `python3 tools/check_upstream_updates.py` lists them with
-per-file diff commands.
+Entries before the OpenAI-native port describe the original Claude-oriented runtime
+and are retained as project history. Current runtime authority is `AGENTS.md` plus
+`.agents/skills/`; private candidate state is no longer stored in methodology files.
 
 ## [Unreleased]
 
 ### Changed
+
+- Ported every reusable workflow to native OpenAI skills under `.agents/skills/`,
+  with `agents/openai.yaml` Desktop metadata and provider-neutral inputs.
+- Made `AGENTS.md` authoritative and reduced Claude compatibility to thin pointers.
+- Separated all candidate-specific mutable state into ignored `profile/` and runtime
+  directories, leaving plugin packaging free of personal data.
+- Added a valid skills-only OpenAI plugin manifest and deterministic packaging from
+  `.agents/skills/` into the required release `skills/` layout.
+- Added explicit ChatGPT Work artifact fallbacks, Windows-first environment checks,
+  independent application review with a no-subagent fallback, and native validators.
+
+### Historical upstream changes pending reconciliation
 
 - **Job matching reframed around function, not title** (`framework_version` 1.2.2 -> 1.2.3 in
   `04-job-evaluation.md`) - title-lookalike matching throws away career capital that doesn't

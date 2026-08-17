@@ -10,8 +10,8 @@ CLI for the [Jobdanmark.dk](https://www.jobdanmark.dk) public job search API.
 
 ## Installation
 
-```bash
-cd skills/jobdanmark-search/cli
+```powershell
+# First change to this skill's `cli` directory (the one containing package.json).
 bun install
 ```
 
@@ -66,7 +66,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 **Endpoint**: `POST https://jobdanmark.dk/api/jobsearch/search/{page}`
 
-```bash
+```powershell
 bun run src/cli.ts search [flags]
 ```
 
@@ -91,7 +91,7 @@ bun run src/cli.ts search [flags]
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts search --text "elektriker" --job-type fuldtid --municipality "Odense"
 
 bun run src/cli.ts search --category 227978 --job-type "fuldtid,deltid" --page 2 --format table
@@ -168,7 +168,7 @@ bun run src/cli.ts search --text "sygeplejerske" --zip 8000 --limit 10
 
 **Method**: Fetch HTML from `https://jobdanmark.dk/job/{slug}`. The CLI extracts a `<script type="application/ld+json">` JobPosting block when present, and falls back to parsing the rendered job page HTML when Jobdanmark omits JSON-LD.
 
-```bash
+```powershell
 bun run src/cli.ts detail <slug> [--format json|plain]
 ```
 
@@ -176,7 +176,7 @@ The `slug` is the URL path segment returned as `slug` in `search` results (e.g. 
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts detail it-chef-soeges-til-rah
 bun run src/cli.ts detail it-chef-soeges-til-rah --format plain
 ```
@@ -215,7 +215,7 @@ bun run src/cli.ts detail it-chef-soeges-til-rah --format plain
 
 **Endpoint**: `GET https://jobdanmark.dk/api/categorycount/getcounts`
 
-```bash
+```powershell
 bun run src/cli.ts categories [flags]
 ```
 
@@ -228,7 +228,7 @@ bun run src/cli.ts categories [flags]
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts categories
 bun run src/cli.ts categories --format table
 ```
@@ -306,7 +306,7 @@ bun run src/cli.ts categories --format table
 
 **Endpoint**: `GET https://jobdanmark.dk/api/search/autocomplete?q={query}`
 
-```bash
+```powershell
 bun run src/cli.ts autocomplete --query <text> [flags]
 ```
 
@@ -320,7 +320,7 @@ bun run src/cli.ts autocomplete --query <text> [flags]
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts autocomplete --query "it"
 bun run src/cli.ts autocomplete --query "sygeplejerske" --format table
 ```
@@ -371,7 +371,7 @@ bun run src/cli.ts autocomplete --query "sygeplejerske" --format table
 
 **Endpoint**: `GET https://jobdanmark.dk/api/search/locations?q={query}`
 
-```bash
+```powershell
 bun run src/cli.ts locations --query <text> [flags]
 ```
 
@@ -385,7 +385,7 @@ bun run src/cli.ts locations --query <text> [flags]
 
 ### Example
 
-```bash
+```powershell
 bun run src/cli.ts locations --query "Odense"
 bun run src/cli.ts locations --query "8000" --format table
 bun run src/cli.ts locations --query "Sjælland"

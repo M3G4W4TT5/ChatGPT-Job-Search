@@ -1,27 +1,11 @@
 ---
 name: jobnet-search
-version: 1.0.0
-description: >
-  Make sure to use this skill whenever the user mentions anything related to Danish
-  job searching, job listings, job vacancies, employment opportunities in Denmark, or
-  the Danish government job portal — even if they don't mention jobnet.dk explicitly.
-  Also invoke this skill for questions about specific job titles, occupations, employers,
-  or regions in a Danish employment context. This skill covers the official Danish
-  public job portal operated by STAR (Styrelsen for Arbejdsmarked og Rekruttering).
-  Trigger phrases include: danish jobs, danish job search, jobnet, jobnet.dk, find job
-  denmark, danish employment, job i danmark, job på jobnet, offentlige job, stillinger
-  i det offentlige, public sector jobs denmark, government jobs denmark, STAR jobs,
-  job ledige stillinger, ledig stilling, søg job, job opslag, job vacancy denmark,
-  stillingopslag, jobopslag, sygepleje job, ingeniør job, lærer job, pædagog job,
-  it-job denmark, jobs in copenhagen, jobs in aarhus, jobs in odense, deltidsjob,
-  fuldtidsjob, fastansættelse, tidsbegrænset ansættelse, fleksjob, sygeplejerske job,
-  social worker job denmark, occupation search denmark, esco occupation, job deadline,
-  ansøgningsfrist, søg efter job, full time job denmark, part time job denmark.
-context: fork
-enabled: false  # Danish demo portal - ships opt-in; /setup enables it when your market is Denmark, or set true here yourself
-allowed-tools: Bash(bun run .agents/skills/jobnet-search/cli/src/cli.ts *)
+description: "Search or inspect official Jobnet listings. Use for Danish public job-search queries, occupations, regions, employment terms, and specific postings."
 ---
 
+
+
+Before starting, locate and read the nearest repository or plugin-root `AGENTS.md`, then read `../job-search-core/references/surface-modes.md`. Interpret the user's prompt, named mode, URLs, and attachments as the skill input; do not rely on slash-command variables or a local shell unless local repo mode is verified. In local mode, resolve the directory containing this SKILL.md, Push-Location to it before running relative CLI examples, and Pop-Location when finished; this works in both a repository checkout and a packaged plugin.
 # Jobnet-Search Skill
 
 Access live Danish job listings from the Jobnet.dk public API. No authentication needed.
@@ -45,8 +29,8 @@ Invoke this skill when the user wants to:
 
 ### Search for job ads
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts search [flags]
+```powershell
+bun run cli/src/cli.ts search [flags]
 ```
 
 Key flags:
@@ -65,8 +49,8 @@ Key flags:
 
 ### Full job ad detail
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts detail <jobAdId> [--format json|plain]
+```powershell
+bun run cli/src/cli.ts detail <jobAdId> [--format json|plain]
 ```
 
 `jobAdId` is the UUID from `search` results (the `jobAdId` field). Returns the complete job
@@ -74,8 +58,8 @@ description, contact persons, application deadline, employer details, and direct
 
 ### Search occupation types
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts occupations --search-string <text> [--per-page <n>]
+```powershell
+bun run cli/src/cli.ts occupations --search-string <text> [--per-page <n>]
 ```
 
 Use this to discover ESCO occupation identifiers before passing them to `search` with
@@ -83,8 +67,8 @@ Use this to discover ESCO occupation identifiers before passing them to `search`
 
 ### Typeahead suggestions
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts suggestions --query <text> [--limit <n>]
+```powershell
+bun run cli/src/cli.ts suggestions --query <text> [--limit <n>]
 ```
 
 Returns Danish job title autocomplete strings. Useful for exploring valid Danish
@@ -97,9 +81,9 @@ job titles before constructing a `search` query.
 **Discover occupations first.** Use `occupations` or `suggestions` to find the right Danish
 term or ESCO identifier before running a `search`:
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts suggestions --query "syge"
-bun run .agents/skills/jobnet-search/cli/src/cli.ts occupations --search-string "sygeplejerske"
+```powershell
+bun run cli/src/cli.ts suggestions --query "syge"
+bun run cli/src/cli.ts occupations --search-string "sygeplejerske"
 ```
 
 **Natural workflow: `search` → `detail`.**
@@ -128,57 +112,57 @@ CLI outputs. Use `--page` + `--per-page` to iterate through large result sets.
 
 ### Jobs in Copenhagen area
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts search \
-  --region HovedstadenOgBornholm \
-  --per-page 10 \
+```powershell
+bun run cli/src/cli.ts search `
+  --region HovedstadenOgBornholm `
+  --per-page 10 `
   --format table
 ```
 
 ### Nurse jobs nationwide
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts search \
-  --search-string "sygeplejerske" \
-  --work-hours FullTime \
-  --duration Permanent \
-  --order BestMatch \
-  --per-page 10 \
+```powershell
+bun run cli/src/cli.ts search `
+  --search-string "sygeplejerske" `
+  --work-hours FullTime `
+  --duration Permanent `
+  --order BestMatch `
+  --per-page 10 `
   --format table
 ```
 
 ### IT jobs near Aarhus within 30km
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts search \
-  --search-string "udvikler" \
-  --postal-code 8000 \
-  --radius 30 \
-  --work-hours FullTime \
+```powershell
+bun run cli/src/cli.ts search `
+  --search-string "udvikler" `
+  --postal-code 8000 `
+  --radius 30 `
+  --work-hours FullTime `
   --format table
 ```
 
 ### Full details of a job ad
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
+```powershell
+bun run cli/src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
 ```
 
 ### Jobs sorted by application deadline (urgent first)
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts search \
-  --search-string "pædagog" \
-  --region OevrigeSjaelland \
-  --order ApplicationDate \
+```powershell
+bun run cli/src/cli.ts search `
+  --search-string "pædagog" `
+  --region OevrigeSjaelland `
+  --order ApplicationDate `
   --per-page 10
 ```
 
 ### Discover occupation terms
 
-```bash
-bun run .agents/skills/jobnet-search/cli/src/cli.ts suggestions --query "ingeniør" --limit 5
-bun run .agents/skills/jobnet-search/cli/src/cli.ts occupations --search-string "lærer" --per-page 5
+```powershell
+bun run cli/src/cli.ts suggestions --query "ingeniør" --limit 5
+bun run cli/src/cli.ts occupations --search-string "lærer" --per-page 5
 ```
 
 ---

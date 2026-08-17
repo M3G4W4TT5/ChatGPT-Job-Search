@@ -60,6 +60,20 @@ class VerifyPdfTests(unittest.TestCase):
         with self.assertRaisesRegex(VerificationError, "Professional Experience"):
             verify_pdf(self.pdf, required_text=("Professional Experience",))
 
+    @patch("tools.verify_pdf.run_tool")
+    def test_rejects_cid_markers(self, mock_run_tool):
+        mock_run_tool.return_value = "Readable text with (cid:123) corruption"
+
+        with self.assertRaisesRegex(VerificationError, "ATS-corruption"):
+            verify_pdf(self.pdf)
+
+    @patch("tools.verify_pdf.run_tool")
+    def test_rejects_replacement_characters(self, mock_run_tool):
+        mock_run_tool.return_value = "Readable text with \ufffd corruption"
+
+        with self.assertRaisesRegex(VerificationError, "ATS-corruption"):
+            verify_pdf(self.pdf)
+
     def test_rejects_missing_pdf(self):
         with self.assertRaisesRegex(VerificationError, "PDF does not exist"):
             verify_pdf(Path(self.temp_dir.name) / "missing.pdf")
@@ -68,7 +82,7 @@ class VerifyPdfTests(unittest.TestCase):
 class RunToolTests(unittest.TestCase):
     @patch("tools.verify_pdf.subprocess.run", side_effect=FileNotFoundError)
     def test_reports_missing_poppler_command(self, _mock_run):
-        with self.assertRaisesRegex(VerificationError, "install poppler-utils"):
+        with self.assertRaisesRegex(VerificationError, "SETUP.md"):
             run_tool(["pdftotext", "example.pdf", "-"])
 
     @patch("tools.verify_pdf.subprocess.run")

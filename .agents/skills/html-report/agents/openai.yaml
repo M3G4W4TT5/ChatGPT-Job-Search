@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML report"
+  short_description: "Build a private HTML application-pipeline dashboard."
+  default_prompt: "Use $html-report to create a private dashboard from my tracker and ranked jobs."

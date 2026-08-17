@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add template"
+  short_description: "Register and verify a private application template."
+  default_prompt: "Use $add-template to register and verify this private CV or cover-letter template."

@@ -1,0 +1,30 @@
+{
+  "name": "ai-job-search",
+  "version": "0.1.0",
+  "description": "OpenAI-native skills for evidence-grounded job search, applications, interview preparation, and outcome tracking.",
+  "author": {
+    "name": "Mads Lorentzen and contributors",
+    "url": "https://github.com/MadsLorentzen"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jobs",
+    "career",
+    "applications",
+    "codex",
+    "chatgpt"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AI Job Search",
+    "shortDescription": "Grounded job-search and application workflows",
+    "longDescription": "A skills-only OpenAI plugin for private candidate setup, job discovery and ranking, grounded application drafting, independent review, interview preparation, and outcome tracking.",
+    "developerName": "Mads Lorentzen and contributors",
+    "category": "Productivity",
+    "defaultPrompt": "Start with $setup to create or load a private candidate profile, then help with the requested job-search workflow.",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ]
+  }
+}

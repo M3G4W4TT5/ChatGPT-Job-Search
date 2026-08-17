@@ -1,26 +1,11 @@
 ---
 name: jobindex-search
-version: 1.0.0
-description: >
-  Make sure to use this skill whenever the user wants to search for jobs in Denmark,
-  find Danish job listings, look up a specific job posting, or asks anything about
-  the Danish job market — even if they don't mention jobindex.dk explicitly. Invoke
-  this skill for questions about open positions, job vacancies, hiring in Denmark,
-  job opportunities in Danish cities or sectors, or when the user wants to find work
-  in Denmark. Also trigger for phrases like "find me a job", "are there any jobs for
-  X in Copenhagen", or "what jobs are available in Aarhus" when the context is Denmark.
-  Trigger phrases include: jobindex, jobsøgning, job i Danmark, ledige stillinger,
-  job opslag, find job, stillingopslag, jobannonce, job vacancy denmark, danish jobs,
-  jobs in denmark, job search denmark, work in denmark, find work denmark, IT jobs
-  denmark, engineer jobs denmark, developer jobs copenhagen, marketing jobs aarhus,
-  jobs aarhus, jobs copenhagen, jobs odense, jobs aalborg, job openings denmark,
-  hiring denmark, job listings denmark, python jobs denmark, grafisk designer job,
-  data engineer job, softwareudvikler job, full stack developer job danmark.
-context: fork
-enabled: false  # Danish demo portal - ships opt-in; /setup enables it when your market is Denmark, or set true here yourself
-allowed-tools: Bash(bun run .agents/skills/jobindex-search/cli/src/cli.ts *)
+description: "Search or inspect Jobindex listings. Use for Danish jobs, vacancies, employers, sectors, cities, and specific Jobindex postings."
 ---
 
+
+
+Before starting, locate and read the nearest repository or plugin-root `AGENTS.md`, then read `../job-search-core/references/surface-modes.md`. Interpret the user's prompt, named mode, URLs, and attachments as the skill input; do not rely on slash-command variables or a local shell unless local repo mode is verified. In local mode, resolve the directory containing this SKILL.md, Push-Location to it before running relative CLI examples, and Pop-Location when finished; this works in both a repository checkout and a packaged plugin.
 # Jobindex Search Skill
 
 Search live Danish job listings from Jobindex.dk. No authentication needed.
@@ -40,8 +25,8 @@ Invoke this skill when the user wants to:
 
 ### Search job listings
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search [flags]
+```powershell
+bun run cli/src/cli.ts search [flags]
 ```
 
 Key flags:
@@ -56,8 +41,8 @@ Key flags:
 
 ### Fetch full job detail
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts detail <id> [--format json|plain]
+```powershell
+bun run cli/src/cli.ts detail <id> [--format json|plain]
 ```
 
 `id` is the job ID from `search` results (e.g. `h1647303`). You may also pass the full Jobindex URL. Returns the full job description, deadline, employment type, hours, and apply link.
@@ -86,64 +71,64 @@ bun run .agents/skills/jobindex-search/cli/src/cli.ts detail <id> [--format json
 
 ### Find Python jobs posted in the last 7 days
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --query python \
-  --jobage 7 \
-  --sort date \
+```powershell
+bun run cli/src/cli.ts search `
+  --query python `
+  --jobage 7 `
+  --sort date `
   --format table
 ```
 
 ### Data engineer jobs in Copenhagen
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --query "data engineer københavn" \
-  --sort score \
+```powershell
+bun run cli/src/cli.ts search `
+  --query "data engineer københavn" `
+  --sort score `
   --format table
 ```
 
 ### Graphic designer jobs — all time, by relevance
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --query "grafisk designer" \
-  --limit 10 \
+```powershell
+bun run cli/src/cli.ts search `
+  --query "grafisk designer" `
+  --limit 10 `
   --format table
 ```
 
 ### Full-stack developer jobs, page 2
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --query "full stack developer" \
-  --page 2 \
+```powershell
+bun run cli/src/cli.ts search `
+  --query "full stack developer" `
+  --page 2 `
   --format json
 ```
 
 ### Jobs posted today across all sectors
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --jobage 1 \
-  --sort date \
-  --limit 20 \
+```powershell
+bun run cli/src/cli.ts search `
+  --jobage 1 `
+  --sort date `
+  --limit 20 `
   --format table
 ```
 
 ### Get full details for a specific job
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts detail h1647303 --format plain
+```powershell
+bun run cli/src/cli.ts detail h1647303 --format plain
 ```
 
 ### Marketing jobs in Aarhus
 
-```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
-  --query "marketing aarhus" \
-  --jobage 30 \
-  --sort date \
+```powershell
+bun run cli/src/cli.ts search `
+  --query "marketing aarhus" `
+  --jobage 30 `
+  --sort date `
   --format table
 ```
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jobbank search"
+  short_description: "Search current academic and professional roles on Jobbank."
+  default_prompt: "Use $jobbank-search to search Jobbank for the specified Danish roles."

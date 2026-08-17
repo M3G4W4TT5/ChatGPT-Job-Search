@@ -65,27 +65,27 @@ Category uses a two-part path: `{group}/{slug}`:
 
 ## Examples
 
-```bash
+```powershell
 # Basic keyword search
-playwright-cli goto "https://www.jobindex.dk/jobsoegning?q=python+developer"
+Start-Process "https://www.jobindex.dk/jobsoegning?q=python+developer"
 
 # Exact match search (single quotes around query)
-playwright-cli goto "https://www.jobindex.dk/jobsoegning?q=%27python+developer%27"
+Start-Process "https://www.jobindex.dk/jobsoegning?q=%27python+developer%27"
 
 # Search in Storkøbenhavn area
-playwright-cli goto "https://www.jobindex.dk/jobsoegning/storkoebenhavn?q=python+developer"
+Start-Process "https://www.jobindex.dk/jobsoegning/storkoebenhavn?q=python+developer"
 
 # Search with category + area
-playwright-cli goto "https://www.jobindex.dk/jobsoegning/it/itdrift/storkoebenhavn?q=data+engineer"
+Start-Process "https://www.jobindex.dk/jobsoegning/it/itdrift/storkoebenhavn?q=data+engineer"
 
 # Last 7 days only
-playwright-cli goto "https://www.jobindex.dk/jobsoegning?q=data+engineer&jobage=7"
+Start-Process "https://www.jobindex.dk/jobsoegning?q=data+engineer&jobage=7"
 
 # Page 2 of results
-playwright-cli goto "https://www.jobindex.dk/jobsoegning?q=data+engineer&page=2"
+Start-Process "https://www.jobindex.dk/jobsoegning?q=data+engineer&page=2"
 
 # Everything combined
-playwright-cli goto "https://www.jobindex.dk/jobsoegning/storkoebenhavn?q=data+engineer&jobage=7&page=1"
+Start-Process "https://www.jobindex.dk/jobsoegning/storkoebenhavn?q=data+engineer&jobage=7&page=1"
 ```
 
 ## Filters Available via UI Only

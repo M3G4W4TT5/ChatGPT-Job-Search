@@ -1,0 +1,4 @@
+interface:
+  display_name: "Upskill plan"
+  short_description: "Turn repeated job gaps into a practical learning plan."
+  default_prompt: "Use $upskill to analyze my job gaps and build a verified learning plan."

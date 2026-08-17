@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "portals": [
+    {
+      "skill": "freehire-search",
+      "market": "global-tech",
+      "enabled": true
+    },
+    {
+      "skill": "linkedin-search",
+      "market": "global",
+      "enabled": false
+    },
+    {
+      "skill": "jobbank-search",
+      "market": "denmark",
+      "enabled": false
+    },
+    {
+      "skill": "jobdanmark-search",
+      "market": "denmark",
+      "enabled": false
+    },
+    {
+      "skill": "jobindex-search",
+      "market": "denmark",
+      "enabled": false
+    },
+    {
+      "skill": "jobnet-search",
+      "market": "denmark",
+      "enabled": false
+    }
+  ]
+}
