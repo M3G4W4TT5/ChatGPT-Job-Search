@@ -1,4 +1,4 @@
-# AI Job Search: project authority
+# ChatGPT Job Search: project authority
 
 This repository is an OpenAI-native port of [Mads Lorentzen's `ai-job-search`](https://github.com/MadsLorentzen/ai-job-search). The original project, history, MIT licence, and copyright remain Mads Lorentzen's work. This port keeps his methodology while making native skills the runtime authority for ChatGPT Work, the ChatGPT/Codex desktop app, and Codex CLI.
 
@@ -69,7 +69,7 @@ For `apply` and any other workflow requiring a reviewer:
 - Use `rg` for repository searches. Preserve unrelated work and inspect `git status` before and after changes.
 - Keep skills focused. `SKILL.md` frontmatter contains only `name` and `description`. Put UI metadata in `agents/openai.yaml`; put detail in one-level `references/`, deterministic helpers in `scripts/`, and output templates in `assets/`.
 - Keep `.codex-plugin/plugin.json` skills-only: no hooks, MCP servers, apps, credentials, or private mutable state.
-- Keep the original `upstream` remote pointed at `https://github.com/MadsLorentzen/ai-job-search.git`. Fetch and compare; never auto-merge upstream.
+- Keep `origin` pointed at `https://github.com/M3G4W4TT5/ChatGPT-Job-Search.git` and `upstream` pointed at the original project, `https://github.com/MadsLorentzen/ai-job-search.git`. Fetch and compare upstream; never auto-merge upstream changes.
 
 ## Required verification
 

@@ -7,6 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $upstreamConfig = Get-Content -LiteralPath (Join-Path $repositoryRoot 'config\upstream.json') -Raw | ConvertFrom-Json
+$originConfig = Get-Content -LiteralPath (Join-Path $repositoryRoot 'config\origin.json') -Raw | ConvertFrom-Json
 
 function Get-FirstVersionLine {
     param(
@@ -98,11 +99,22 @@ catch {
     $upstream = $null
 }
 
+$origin = $null
+try {
+    $origin = (& git -C $repositoryRoot remote get-url origin 2>$null).Trim()
+}
+catch {
+    $origin = $null
+}
+
 $result = [pscustomobject]@{
     repository = $repositoryRoot
     upstream = $upstream
     expected_upstream = $upstreamConfig.url
     upstream_configured = ($upstream -eq $upstreamConfig.url)
+    origin = $origin
+    expected_origin = $originConfig.url
+    origin_configured = ($origin -eq $originConfig.url)
     tools = @($tools)
     missing = @($tools | Where-Object { -not $_.found } | ForEach-Object name)
 }
@@ -114,6 +126,8 @@ else {
     "Repository: $repositoryRoot"
     "Upstream: $(if ($upstream) { $upstream } else { '<missing>' })"
     "Expected: $($upstreamConfig.url)"
+    "Origin: $(if ($origin) { $origin } else { '<missing>' })"
+    "Expected origin: $($originConfig.url)"
     foreach ($tool in $tools) {
         $status = if ($tool.found) { 'FOUND' } else { 'MISSING' }
         "{0,-10} {1,-7} {2}" -f $tool.name, $status, $(if ($tool.path) { $tool.path } else { '' })

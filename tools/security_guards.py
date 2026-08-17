@@ -122,7 +122,7 @@ def check_gitignore() -> None:
         "job_scraper/results.json",
         "reports/private.html",
         "upskill/private.json",
-        "dist/ai-job-search/skills/setup/SKILL.md",
+        "dist/chatgpt-job-search/skills/setup/SKILL.md",
     ]
     result = subprocess.run(
         ["git", "check-ignore", "--no-index", *probes],

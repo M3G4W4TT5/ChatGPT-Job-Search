@@ -15,8 +15,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("dist/ai-job-search"),
-        help="new or empty output directory (default: dist/ai-job-search)",
+        default=Path("dist/chatgpt-job-search"),
+        help="new or empty output directory (default: dist/chatgpt-job-search)",
     )
     return parser.parse_args()
 

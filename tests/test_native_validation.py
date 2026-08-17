@@ -48,7 +48,10 @@ class NativeValidators(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         data = json.loads(result.stdout)
+        self.assertEqual(data["expected_origin"], "https://github.com/M3G4W4TT5/ChatGPT-Job-Search.git")
         self.assertEqual(data["expected_upstream"], "https://github.com/MadsLorentzen/ai-job-search.git")
+        if data["origin"] is not None:
+            self.assertTrue(data["origin_configured"])
         if data["upstream"] is not None:
             self.assertTrue(data["upstream_configured"])
         self.assertEqual({tool["name"] for tool in data["tools"]}, {

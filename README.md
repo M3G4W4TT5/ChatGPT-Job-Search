@@ -1,10 +1,10 @@
-# AI Job Search
+# ChatGPT Job Search
 
-An OpenAI-native port of [Mads Lorentzen's AI Job Search](https://github.com/MadsLorentzen/ai-job-search), built for ChatGPT Work, the ChatGPT/Codex Windows Desktop app, and Codex CLI.
+The job search that runs on your machine. An OpenAI-native framework for ChatGPT and Codex that ranks roles, tailors CVs, writes cover letters, and prepares interviews.
 
-![Pip, the AI Job Search mascot](assets/mascot/pip_flight_loop.gif)
+![Pip, the ChatGPT Job Search mascot](assets/mascot/pip_flight_loop.gif)
 
-Mads Lorentzen designed and authored the original project. This port preserves his Git history where possible, retains his MIT licence and copyright notice, and keeps his repository configured as `upstream`. The OpenAI adaptation converts the runtime rather than renaming Claude commands: `AGENTS.md` is authoritative, workflows are native skills, and plugin packaging contains no private candidate state.
+ChatGPT Job Search is an OpenAI-native port of [Mads Lorentzen's AI Job Search](https://github.com/MadsLorentzen/ai-job-search). Mads Lorentzen designed and authored the original project. This port preserves his Git history where possible, retains his MIT licence and copyright notice, and keeps his repository configured as the `upstream` remote. The OpenAI adaptation converts the runtime rather than renaming Claude commands: `AGENTS.md` is authoritative, workflows are native skills, and plugin packaging contains no private candidate state.
 
 ## What it does
 
@@ -132,11 +132,11 @@ Assemble a local package without publishing it:
 .\.venv\Scripts\python.exe tools\package_plugin.py
 ```
 
-The ignored output is `dist/ai-job-search/`. Validate that bundle with the current OpenAI plugin validator before distribution. Packaging copies the native skills and only their tracked public support files: the manifest, `AGENTS.md`, README, licence, portal defaults, and synthetic document sources. Private runtime directories are outside the package source.
+The ignored output is `dist/chatgpt-job-search/`. Validate that bundle with the current OpenAI plugin validator before distribution. Packaging copies the native skills and only their tracked public support files: the manifest, `AGENTS.md`, README, licence, portal defaults, and synthetic document sources. Private runtime directories are outside the package source.
 
-## Upstream and contributions
+## Remotes and contributions
 
-The canonical source for upstream changes is:
+`origin` is this OpenAI port's writable GitHub repository. `upstream` is Mads Lorentzen's original project and remains the canonical source for intentional methodology updates:
 
 ```powershell
 git remote -v

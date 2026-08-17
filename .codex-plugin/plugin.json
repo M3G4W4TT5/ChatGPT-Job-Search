@@ -1,7 +1,7 @@
 {
-  "name": "ai-job-search",
+  "name": "chatgpt-job-search",
   "version": "0.1.0",
-  "description": "OpenAI-native skills for evidence-grounded job search, applications, interview preparation, and outcome tracking.",
+  "description": "OpenAI-native job-search skills for ChatGPT and Codex.",
   "author": {
     "name": "Mads Lorentzen and contributors",
     "url": "https://github.com/MadsLorentzen"
@@ -16,7 +16,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "AI Job Search",
+    "displayName": "ChatGPT Job Search",
     "shortDescription": "Grounded job-search and application workflows",
     "longDescription": "A skills-only OpenAI plugin for private candidate setup, job discovery and ranking, grounded application drafting, independent review, interview preparation, and outcome tracking.",
     "developerName": "Mads Lorentzen and contributors",

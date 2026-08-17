@@ -1,6 +1,6 @@
 # Weekly upstream triage. Reports only - it NEVER merges, pushes, or edits code.
 #
-# It fetches the upstream template, runs tools/upstream_triage.py to sort the
+# It fetches the original upstream project, runs tools/upstream_triage.py to sort the
 # commits this fork lacks into "worth reviewing" vs "probably skip" (dropping
 # cherry-picks already applied and mapping original workflow paths to their
 # native equivalents). The report is printed in the workflow log only.
@@ -12,7 +12,7 @@
 # is worse than a conflict. Merges stay a human decision, the same posture
 # the apply skill keeps (it drafts, never submits). Keep it that way.
 #
-# Runs only on forks (guarded below), so the upstream template never triggers
+# Runs only on ports/forks (guarded below), so the original project never triggers
 # it against itself - GitHub also leaves inherited workflows disabled on a fork
 # until the owner enables Actions, so the guard is a second fence, not the only
 # one. Token is the built-in GITHUB_TOKEN, scoped to reading contents and
@@ -31,7 +31,7 @@ permissions:
 jobs:
   triage:
     name: Triage upstream commits
-    # No-op on the upstream template itself. Pinned by
+    # No-op on the original project itself. Pinned by
     # tests/test_upstream_triage.py so a template clone never runs it by surprise.
     if: github.repository != 'MadsLorentzen/ai-job-search'
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch upstream template
+      - name: Fetch original upstream
         run: |
           git remote add upstream https://github.com/MadsLorentzen/ai-job-search.git 2>/dev/null || true
           git fetch --quiet upstream master

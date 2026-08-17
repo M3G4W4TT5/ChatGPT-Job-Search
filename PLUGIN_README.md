@@ -1,4 +1,4 @@
-# AI Job Search for OpenAI
+# ChatGPT Job Search
 
 This skills-only plugin is an OpenAI-native port of [Mads Lorentzen's AI Job Search](https://github.com/MadsLorentzen/ai-job-search). Mads Lorentzen designed and authored the original project; the package retains his MIT licence and copyright notice.
 

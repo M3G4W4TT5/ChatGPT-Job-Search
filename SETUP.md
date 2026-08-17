@@ -16,7 +16,7 @@ The check reports:
 - Bun for portal CLIs and their TypeScript checks;
 - LuaLaTeX and XeLaTeX from MiKTeX or TeX Live;
 - Poppler commands `pdfinfo`, `pdftotext`, and `pdftoppm`;
-- Git and the configured `upstream` remote.
+- Git with `origin` configured for this port and `upstream` configured for Mads Lorentzen's original project.
 
 A missing tool is reported as missing, not installed and not counted as a passed gate.
 
@@ -127,7 +127,7 @@ Use the packaged skills through an authorized workspace installation process. Ch
 
 Do not publish or submit the plugin as part of setup.
 
-## 9. Updating from Mads Lorentzen's upstream
+## 9. Updating from Mads Lorentzen's upstream repository
 
 Verify the remote:
 
@@ -137,4 +137,4 @@ git fetch upstream
 git log --oneline --decorate HEAD..upstream/master
 ```
 
-Merge or cherry-pick intentionally. Upstream remains the product source of truth, but `AGENTS.md`, `.agents/skills/`, plugin packaging, and private-state separation are the OpenAI port's runtime architecture and must be reconciled rather than overwritten.
+Merge or cherry-pick intentionally. The original upstream remains the methodology source of truth, but `AGENTS.md`, `.agents/skills/`, plugin packaging, and private-state separation are the OpenAI port's runtime architecture and must be reconciled rather than overwritten.

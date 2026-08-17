@@ -29,12 +29,12 @@ jobs:
       - run: python tools/package_plugin.py
       - name: Package must contain native skills only
         run: |
-          test -f dist/ai-job-search/.codex-plugin/plugin.json
-          test -f dist/ai-job-search/skills/apply/SKILL.md
-          test "$(find dist/ai-job-search/skills -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 21
-          test "$(find dist/ai-job-search/skills -mindepth 3 -maxdepth 3 -path '*/agents/openai.yaml' | wc -l)" -eq 21
-          test ! -e dist/ai-job-search/profile
-          test ! -e dist/ai-job-search/documents
+          test -f dist/chatgpt-job-search/.codex-plugin/plugin.json
+          test -f dist/chatgpt-job-search/skills/apply/SKILL.md
+          test "$(find dist/chatgpt-job-search/skills -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 21
+          test "$(find dist/chatgpt-job-search/skills -mindepth 3 -maxdepth 3 -path '*/agents/openai.yaml' | wc -l)" -eq 21
+          test ! -e dist/chatgpt-job-search/profile
+          test ! -e dist/chatgpt-job-search/documents
 
   python-tests:
     name: Python tests
@@ -62,6 +62,7 @@ jobs:
           $result = powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check_environment.ps1 -Json | ConvertFrom-Json
           if (-not ($result.tools.name -contains 'python')) { throw 'Python probe missing' }
           if (-not ($result.tools.name -contains 'bun')) { throw 'Bun probe missing' }
+          if ($result.expected_origin -ne 'https://github.com/M3G4W4TT5/ChatGPT-Job-Search.git') { throw 'Wrong origin configuration' }
           if ($result.expected_upstream -ne 'https://github.com/MadsLorentzen/ai-job-search.git') { throw 'Wrong upstream configuration' }
       - run: python tools/lint_skills.py
       - run: python tools/security_guards.py
