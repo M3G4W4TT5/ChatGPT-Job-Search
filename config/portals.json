@@ -14,22 +14,22 @@
     {
       "skill": "jobbank-search",
       "market": "denmark",
-      "enabled": false
+      "enabled": true
     },
     {
       "skill": "jobdanmark-search",
       "market": "denmark",
-      "enabled": false
+      "enabled": true
     },
     {
       "skill": "jobindex-search",
       "market": "denmark",
-      "enabled": false
+      "enabled": true
     },
     {
       "skill": "jobnet-search",
       "market": "denmark",
-      "enabled": false
+      "enabled": true
     }
   ]
 }
