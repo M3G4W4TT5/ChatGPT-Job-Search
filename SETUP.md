@@ -36,16 +36,20 @@ If `py` is unavailable but `python` points to a supported version, use `python -
 
 Install Bun only if you intend to run local portal skills. See [Bun's Windows installation documentation](https://bun.sh/docs/installation) and review the command before running it.
 
+Bun is separate from the Python `.venv`. On Windows, the shared resolver checks each portal's `cli\node_modules\.bin\bun.exe`, `$env:BUN_INSTALL`, `$env:USERPROFILE\.bun\bin\bun.exe`, `PATH`, and repository-local `.tools`. A successful fallback does not require a persistent `PATH` change.
+
 The repository pins Bun 1.3.14 in `.bun-version`, each CLI manifest, and CI. Verify that exact version and install only from the committed lockfiles:
 
 ```powershell
-bun --version
-if ((bun --version) -ne (Get-Content .bun-version -Raw).Trim()) { throw 'Wrong Bun version' }
+$resolver = Resolve-Path .agents\skills\job-search-core\scripts\resolve-bun.ps1
 Get-ChildItem .agents\skills -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'cli\package.json') } | ForEach-Object {
-  Push-Location (Join-Path $_.FullName 'cli')
-  bun install --frozen-lockfile
-  bun run typecheck
-  bun test
+  $cliDirectory = Join-Path $_.FullName 'cli'
+  $bun = & $resolver -CliDirectory $cliDirectory
+  if ((& $bun --version) -ne (Get-Content .bun-version -Raw).Trim()) { throw 'Wrong Bun version' }
+  Push-Location $cliDirectory
+  & $bun install --frozen-lockfile
+  & $bun run typecheck
+  & $bun test
   Pop-Location
 }
 ```

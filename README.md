@@ -65,9 +65,12 @@ Use $apply for this attached posting.
 4. Install each portal CLI's local development dependencies after reviewing them:
 
    ```powershell
+   $resolver = Resolve-Path .agents\skills\job-search-core\scripts\resolve-bun.ps1
    Get-ChildItem .agents\skills -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'cli\package.json') } | ForEach-Object {
-     Push-Location (Join-Path $_.FullName 'cli')
-     bun install --frozen-lockfile
+     $cliDirectory = Join-Path $_.FullName 'cli'
+     $bun = & $resolver -CliDirectory $cliDirectory
+     Push-Location $cliDirectory
+     & $bun install --frozen-lockfile
      Pop-Location
    }
    ```

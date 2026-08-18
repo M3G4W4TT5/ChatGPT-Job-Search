@@ -55,7 +55,17 @@ function Find-NewestLocalTool {
 }
 
 $popplerBase = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin'
-$localBun = Find-NewestLocalTool -Pattern '.tools\bun-*\bun-windows-x64\bun.exe'
+$bunResolver = Join-Path $repositoryRoot '.agents\skills\job-search-core\scripts\resolve-bun.ps1'
+$bunProbeCli = Join-Path $repositoryRoot '.agents\skills\jobbank-search\cli'
+$resolvedBun = $null
+if ((Test-Path -LiteralPath $bunResolver -PathType Leaf) -and (Test-Path -LiteralPath $bunProbeCli -PathType Container)) {
+    try {
+        $resolvedBun = & $bunResolver -CliDirectory $bunProbeCli | Select-Object -First 1
+    }
+    catch {
+        $resolvedBun = $null
+    }
+}
 $localMiKTeX = Join-Path $repositoryRoot '.tools\miktex-portable\texmfs\install\miktex\bin\x64'
 $localPdfInfo = Find-NewestLocalTool -Pattern '.tools\poppler-*\poppler-*\Library\bin\pdfinfo.exe'
 $localPdfText = Find-NewestLocalTool -Pattern '.tools\poppler-*\poppler-*\Library\bin\pdftotext.exe'
@@ -72,7 +82,7 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 $specs = @(
     @{ Name = 'git'; Command = 'git'; Args = @('--version'); Fallbacks = @() },
     @{ Name = 'python'; Command = $pythonCommand; Args = $pythonArguments; Fallbacks = @() },
-    @{ Name = 'bun'; Command = 'bun'; Args = @('--version'); Fallbacks = @($localBun) },
+    @{ Name = 'bun'; Command = 'bun'; Args = @('--version'); Fallbacks = @($resolvedBun) },
     @{ Name = 'lualatex'; Command = 'lualatex'; Args = @('--version'); Fallbacks = @(Join-Path $localMiKTeX 'lualatex.exe') },
     @{ Name = 'xelatex'; Command = 'xelatex'; Args = @('--version'); Fallbacks = @(Join-Path $localMiKTeX 'xelatex.exe') },
     @{ Name = 'pdfinfo'; Command = 'pdfinfo'; Args = @('-v'); Fallbacks = @($localPdfInfo, (Join-Path $popplerBase 'pdfinfo.exe')) },
