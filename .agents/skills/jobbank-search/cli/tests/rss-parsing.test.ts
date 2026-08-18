@@ -33,7 +33,7 @@ describe("rssFetch", () => {
     const items = await rssFetch({ key: "data science", cvtype: ["3", "6"] });
     const url = new URL(requestedUrl);
 
-    expect(url.pathname).toBe("/job/rss");
+    expect(url.pathname).toBe("/job/rss/");
     expect(url.searchParams.get("key")).toBe("data science");
     expect(url.searchParams.getAll("cvtype")).toEqual(["3", "6"]);
     expect(requestedUserAgent).toBe(USER_AGENT);

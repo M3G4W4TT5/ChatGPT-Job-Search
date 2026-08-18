@@ -111,7 +111,9 @@ export async function rssFetch(params: Record<string, string | string[]>): Promi
       searchParams.append(key, value)
     }
   }
-  const url = `${BASE_URL}/job/rss?${searchParams.toString()}`
+  // Jobbank canonicalizes the RSS endpoint with a trailing slash. Use the
+  // canonical URL directly because fetchWithUA intentionally rejects redirects.
+  const url = `${BASE_URL}/job/rss/?${searchParams.toString()}`
   const response = await fetchWithUA(url)
   if (!response.ok) {
     const body = await response.clone().text()

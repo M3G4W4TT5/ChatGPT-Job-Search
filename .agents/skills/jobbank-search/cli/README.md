@@ -3,7 +3,7 @@
 CLI for [Akademikernes Jobbank](https://jobbank.dk) — Denmark's job portal for highly educated candidates.
 
 **Data sources:**
-- **RSS feed**: `https://jobbank.dk/job/rss?{params}` — 100 items max, all search filters work
+- **RSS feed**: `https://jobbank.dk/job/rss/?{params}` — 100 items max, all search filters work
 - **Job detail**: `https://jobbank.dk/job/{id}/` — JSON-LD (`Schema.org JobPosting`) embedded in page HTML
 
 **Authentication**: None required. A browser User-Agent header is sent, but Jobbank may still block automated requests with Cloudflare bot protection. In that case the CLI exits with a clear error and callers should use a web-search fallback rather than retrying.
@@ -183,7 +183,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 ## `search` — Search job listings
 
-**Endpoint**: `GET https://jobbank.dk/job/rss?{params}`
+**Endpoint**: `GET https://jobbank.dk/job/rss/?{params}`
 
 ```powershell
 bun run src/cli.ts search [flags]
