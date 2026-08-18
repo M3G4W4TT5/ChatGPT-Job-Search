@@ -1,8 +1,8 @@
 # ChatGPT Job Search
-
+<p align="center">
+  <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
+</p>
 The job search that runs on your machine. An OpenAI-native framework for ChatGPT and Codex that ranks roles, tailors CVs, writes cover letters, and prepares interviews.
-
-![Pip, the ChatGPT Job Search mascot](assets/mascot/pip_flight_loop.gif)
 
 ## What it does
 
