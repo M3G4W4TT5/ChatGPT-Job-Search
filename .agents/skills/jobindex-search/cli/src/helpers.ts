@@ -17,6 +17,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
+      redirect: "error",
       signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
@@ -37,6 +38,17 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
 }
 
 export async function htmlFetch(url: string): Promise<string> {
+  const parsed = new URL(url)
+  if (
+    parsed.protocol !== "https:" ||
+    !["jobindex.dk", "www.jobindex.dk"].includes(parsed.hostname.toLowerCase()) ||
+    parsed.username ||
+    parsed.password ||
+    parsed.port
+  ) {
+    throw new Error("Unsafe Jobindex URL")
+  }
+
   const maxRetries = 6
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -46,7 +58,7 @@ export async function htmlFetch(url: string): Promise<string> {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "da,en;q=0.9",
       },
-      redirect: "follow",
+      redirect: "manual",
       signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
@@ -57,6 +69,9 @@ export async function htmlFetch(url: string): Promise<string> {
       await new Promise((resolve) => setTimeout(resolve, delay + jitter))
       delay = Math.min(delay * 2, 5000)
       continue
+    }
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error("Jobindex redirect rejected")
     }
     if (response.status === 404) {
       throw new Error(`Job not found`)

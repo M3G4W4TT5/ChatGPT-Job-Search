@@ -77,7 +77,7 @@ The project is prepared for packaging, but this repository does not publish, sub
    ```powershell
    Get-ChildItem .agents\skills -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'cli\package.json') } | ForEach-Object {
      Push-Location (Join-Path $_.FullName 'cli')
-     bun install
+     bun install --frozen-lockfile
      Pop-Location
    }
    ```

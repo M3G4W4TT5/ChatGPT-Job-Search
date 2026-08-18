@@ -36,13 +36,14 @@ If `py` is unavailable but `python` points to a supported version, use `python -
 
 Install Bun only if you intend to run local portal skills. See [Bun's Windows installation documentation](https://bun.sh/docs/installation) and review the command before running it.
 
-Verify and install dependencies locally per CLI:
+The repository pins Bun 1.3.14 in `.bun-version`, each CLI manifest, and CI. Verify that exact version and install only from the committed lockfiles:
 
 ```powershell
 bun --version
+if ((bun --version) -ne (Get-Content .bun-version -Raw).Trim()) { throw 'Wrong Bun version' }
 Get-ChildItem .agents\skills -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'cli\package.json') } | ForEach-Object {
   Push-Location (Join-Path $_.FullName 'cli')
-  bun install
+  bun install --frozen-lockfile
   bun run typecheck
   bun test
   Pop-Location

@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 errors: list[str] = []
 FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
+BUN_VERSION = "1.3.14"
 REQUIRED_IGNORE_RULES = {
     "profile/**",
     "!profile/.gitkeep",
@@ -176,6 +177,9 @@ def check_tracked_private_data(tracked: list[str]) -> None:
 
 
 def check_manifests() -> None:
+    version_file = ROOT / ".bun-version"
+    if not version_file.is_file() or version_file.read_text(encoding="utf-8").strip() != BUN_VERSION:
+        errors.append(f".bun-version: must pin Bun {BUN_VERSION}")
     manifests = [
         path for path in ROOT.glob(".agents/**/package.json") if "node_modules" not in path.parts
     ]
@@ -196,6 +200,10 @@ def check_manifests() -> None:
             errors.append(f"{rel}: forbidden lifecycle scripts: {sorted(bad)}")
         if "trustedDependencies" in data:
             errors.append(f"{rel}: trustedDependencies is forbidden")
+        if data.get("packageManager") != f"bun@{BUN_VERSION}":
+            errors.append(f"{rel}: packageManager must pin bun@{BUN_VERSION}")
+        if not (path.parent / "bun.lock").is_file():
+            errors.append(f"{rel}: sibling bun.lock is required")
 
 
 def check_access_boundaries(public: list[str]) -> None:

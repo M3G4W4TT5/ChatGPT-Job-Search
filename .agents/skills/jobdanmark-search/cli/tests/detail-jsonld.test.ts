@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { parseJobPostingFromHtml } from "../src/commands/detail";
 
+const JSON_LD_WITH_APPLICATION = await Bun.file(
+  `${import.meta.dir}/fixtures/detail-jsonld-with-application.html`,
+).text();
+
 function pageWithScripts(...scripts: string[]): string {
   return `<html><head>${scripts
     .map((content) => `<script type="application/ld+json">${content}</script>`)
@@ -75,6 +79,33 @@ describe("parseJobPostingFromHtml JSON-LD", () => {
     expect(parsed.validThrough).toBeNull();
     expect(parsed.hiringOrganization).toEqual({ name: "", logo: null });
   });
+
+  test("supplements preferred JSON-LD with the HTML application URL", () => {
+    const parsed = parseJobPostingFromHtml(
+      JSON_LD_WITH_APPLICATION,
+      "data-engineer",
+      "https://jobdanmark.dk/job/data-engineer",
+    );
+
+    expect(parsed.title).toBe("Data Engineer");
+    expect(parsed.applyUrl).toBe(
+      "https://jobdanmark.dk/apply/data-engineer?source=jobdanmark&lang=da",
+    );
+  });
+
+  test.each(["javascript:alert(1)", "data:text/plain,no", "file:///tmp/no", "mailto:test@example.com", "http://[bad"])(
+    "rejects unsafe application URL %s",
+    (href) => {
+      const html = JSON_LD_WITH_APPLICATION.replace(
+        "/apply/data-engineer?source=jobdanmark&amp;lang=da",
+        href,
+      );
+      expect(
+        parseJobPostingFromHtml(html, "data-engineer", "https://jobdanmark.dk/job/data-engineer")
+          .applyUrl,
+      ).toBeNull();
+    },
+  );
 
   test("recognizes rendered not-found and unparseable pages", () => {
     expect(() =>

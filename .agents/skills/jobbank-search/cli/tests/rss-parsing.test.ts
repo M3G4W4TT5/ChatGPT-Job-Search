@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import {
   extractJobIdFromUrl,
+  normalizeRssDate,
+  normalizeRssItems,
   parseRssDescription,
   rssFetch,
   USER_AGENT,
@@ -78,6 +80,31 @@ describe("parseRssDescription", () => {
       location: "",
       deadline: null,
     });
+  });
+});
+
+describe("normalizeRssDate", () => {
+  test("normalizes valid RSS dates and represents missing or malformed dates as null", () => {
+    expect(normalizeRssDate("Mon, 13 Jul 2026 08:00:00 GMT")).toBe("2026-07-13T08:00:00.000Z");
+    expect(normalizeRssDate("")).toBeNull();
+    expect(normalizeRssDate(undefined)).toBeNull();
+    expect(normalizeRssDate("not a date")).toBeNull();
+  });
+
+  test("one malformed or missing date does not drop otherwise valid feed items", () => {
+    const items = ["Mon, 13 Jul 2026 08:00:00 GMT", "broken", ""].map((pubDate, index) => ({
+      title: `Role ${index + 1}`,
+      description: `Fuldtidsjob hos Company ${index + 1}, København`,
+      link: `https://jobbank.dk/job/${index + 1}/company/role`,
+      pubDate,
+    }));
+    const results = normalizeRssItems(items);
+    expect(results).toHaveLength(3);
+    expect(results.map((result) => result.posted)).toEqual([
+      "2026-07-13T08:00:00.000Z",
+      null,
+      null,
+    ]);
   });
 });
 

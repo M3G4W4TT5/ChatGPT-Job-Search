@@ -14,6 +14,7 @@ export async function fetchWithUA(url: string): Promise<Response> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
+      redirect: "error",
       signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
@@ -35,6 +36,29 @@ export interface RssItem {
   description: string
   link: string
   pubDate: string
+}
+
+export function normalizeRssDate(value: string | null | undefined): string | null {
+  if (!value) return null
+  const timestamp = Date.parse(value)
+  return Number.isNaN(timestamp) ? null : new Date(timestamp).toISOString()
+}
+
+export function normalizeRssItems(items: RssItem[]) {
+  return items.map((item) => {
+    const parsed = parseRssDescription(item.description)
+    return {
+      id: extractJobIdFromUrl(item.link),
+      title: item.title,
+      company: parsed.company,
+      location: parsed.location,
+      jobType: parsed.jobType,
+      description: item.description,
+      url: item.link,
+      posted: normalizeRssDate(item.pubDate),
+      deadline: parsed.deadline,
+    }
+  })
 }
 
 function extractCdata(xml: string, tag: string): string {

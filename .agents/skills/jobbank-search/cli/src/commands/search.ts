@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { rssFetch, fetchWithUA, writeError, parseRssDescription, extractJobIdFromUrl, BASE_URL } from "../helpers.js"
+import { rssFetch, fetchWithUA, writeError, normalizeRssItems, BASE_URL } from "../helpers.js"
 
 export const search = defineCommand({
   name: "search",
@@ -134,22 +134,7 @@ export const search = defineCommand({
       }
 
       // Normalize items
-      let results = items.map((item) => {
-        const parsed = parseRssDescription(item.description)
-        const id = extractJobIdFromUrl(item.link)
-        const posted = item.pubDate ? new Date(item.pubDate).toISOString() : ""
-        return {
-          id,
-          title: item.title,
-          company: parsed.company,
-          location: parsed.location,
-          jobType: parsed.jobType,
-          description: item.description,
-          url: item.link,
-          posted,
-          deadline: parsed.deadline,
-        }
-      })
+      let results = normalizeRssItems(items)
 
       // Apply limit
       if (flags.limit !== undefined) {

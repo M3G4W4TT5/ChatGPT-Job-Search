@@ -19,5 +19,6 @@ describe("fetchWithUA request timeout", () => {
 
     await fetchWithUA("https://jobbank.dk/job/rss");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
+    expect(init?.redirect).toBe("error");
   });
 });

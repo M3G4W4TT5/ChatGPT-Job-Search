@@ -55,12 +55,18 @@ function cleanText(text: string): string {
   return text.replace(/\s+/g, " ").trim()
 }
 
-function normalizeUrl(value: string | null | undefined): string | null {
+export function normalizeHttpUrl(value: string | null | undefined, baseUrl = BASE_URL): string | null {
   if (!value) return null
   const decoded = value.replace(/&amp;/g, "&")
-  if (decoded.startsWith("http")) return decoded
-  if (decoded.startsWith("/")) return `${BASE_URL}${decoded}`
-  return decoded
+  try {
+    const parsed = new URL(decoded, baseUrl)
+    if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) {
+      return null
+    }
+    return parsed.href
+  } catch {
+    return null
+  }
 }
 
 function findJobPostingJsonLd(root: ReturnType<typeof parse>): JsonLdJobPosting | null {
@@ -105,7 +111,7 @@ function fromJsonLd(jobPosting: JsonLdJobPosting, slug: string, url: string): De
     employmentType,
     hiringOrganization: {
       name: hiringOrg?.name ?? "",
-      logo: hiringOrg?.logo ?? null,
+      logo: normalizeHttpUrl(hiringOrg?.logo, url),
     },
     jobLocation: {
       streetAddress: address?.streetAddress ?? null,
@@ -168,7 +174,7 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
     .join("\n")
 
   const employmentType = overviewValue(root, "Jobtype")
-  const applyUrl = normalizeUrl(root.querySelector("a.action.primary")?.getAttribute("href"))
+  const applyUrl = applicationUrl(root, url)
 
   return {
     slug,
@@ -179,7 +185,7 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
     employmentType: employmentType ? [employmentType] : [],
     hiringOrganization: {
       name: companyName,
-      logo: normalizeUrl(logoSrc),
+      logo: normalizeHttpUrl(logoSrc, url),
     },
     jobLocation: {
       streetAddress: workplace,
@@ -193,10 +199,17 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
   }
 }
 
+function applicationUrl(root: ReturnType<typeof parse>, pageUrl: string): string | null {
+  return normalizeHttpUrl(root.querySelector("a.action.primary")?.getAttribute("href"), pageUrl)
+}
+
 export function parseJobPostingFromHtml(html: string, slug: string, url: string): DetailResult {
   const root = parse(html)
   const jobPosting = findJobPostingJsonLd(root)
-  return jobPosting ? fromJsonLd(jobPosting, slug, url) : fromRenderedHtml(root, slug, url)
+  if (jobPosting) {
+    return { ...fromJsonLd(jobPosting, slug, url), applyUrl: applicationUrl(root, url) }
+  }
+  return fromRenderedHtml(root, slug, url)
 }
 
 export const detail = defineCommand({
@@ -224,6 +237,7 @@ export const detail = defineCommand({
           "Accept": "text/html,application/xhtml+xml",
           "User-Agent": "AIJobSearchBot/1.0",
         },
+        redirect: "error",
         signal: AbortSignal.timeout(15000),
       })
 

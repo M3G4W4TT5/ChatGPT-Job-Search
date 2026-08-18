@@ -31,6 +31,7 @@ FORBIDDEN_RUNTIME_TEXT = {
 }
 RUNTIME_TEXT_SUFFIXES = {".md", ".py", ".ts", ".json", ".yaml", ".yml"}
 errors: list[str] = []
+BUN_VERSION = "1.3.14"
 
 
 def relative(path: Path) -> str:
@@ -136,6 +137,18 @@ def check_skill(skill_dir: Path) -> None:
                 f"{relative(runtime_path)}: contains a Bash line continuation; use PowerShell"
             )
     check_openai_yaml(skill_dir, name)
+    manifest = skill_dir / "cli" / "package.json"
+    if manifest.is_file():
+        try:
+            package = json.loads(manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"{relative(manifest)}: invalid JSON: {exc}")
+        else:
+            if package.get("packageManager") != f"bun@{BUN_VERSION}":
+                errors.append(f"{relative(manifest)}: packageManager must pin bun@{BUN_VERSION}")
+        lockfile = manifest.parent / "bun.lock"
+        if not lockfile.is_file():
+            errors.append(f"{relative(lockfile)}: required reproducible dependency lockfile is missing")
 
 
 def check_plugin_manifest() -> None:

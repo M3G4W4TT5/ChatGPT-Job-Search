@@ -19,5 +19,6 @@ describe("apiFetch request timeout", () => {
 
     await apiFetch("/search");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
+    expect(init?.redirect).toBe("error");
   });
 });

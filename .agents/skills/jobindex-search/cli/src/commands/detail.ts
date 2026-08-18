@@ -52,6 +52,18 @@ function stripTags(html: string): string {
   return html.replace(/<[^>]+>/g, "").trim()
 }
 
+export function normalizeHttpUrl(value: string, baseUrl = BASE_URL): string | null {
+  try {
+    const parsed = new URL(decodeHtmlEntities(value), baseUrl)
+    if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) {
+      return null
+    }
+    return parsed.href
+  } catch {
+    return null
+  }
+}
+
 /**
  * Extract job ID from URL or return as-is if already an ID
  */
@@ -62,14 +74,38 @@ function extractIdFromUrl(url: string): string {
   return url
 }
 
-function buildUrl(idOrUrl: string): { url: string; id: string } {
-  if (idOrUrl.startsWith("http")) {
-    const id = extractIdFromUrl(idOrUrl)
-    return { url: idOrUrl, id }
+const JOB_ID_PATTERN = /^[hr]\d+$/i
+const JOBINDEX_HOSTS = new Set(["jobindex.dk", "www.jobindex.dk"])
+
+export function normalizeJobDetailInput(idOrUrl: string): { url: string; id: string } {
+  if (JOB_ID_PATTERN.test(idOrUrl)) {
+    return { url: `${BASE_URL}/jobannonce/${idOrUrl}`, id: idOrUrl }
   }
-  // It's a bare ID
-  const url = `${BASE_URL}/jobannonce/${idOrUrl}`
-  return { url, id: idOrUrl }
+
+  let parsed: URL
+  try {
+    parsed = new URL(idOrUrl)
+  } catch {
+    throw new Error("Invalid Jobindex job ID or URL")
+  }
+
+  if (
+    parsed.protocol !== "https:" ||
+    !JOBINDEX_HOSTS.has(parsed.hostname.toLowerCase()) ||
+    parsed.username ||
+    parsed.password ||
+    parsed.port
+  ) {
+    throw new Error("Unsafe Jobindex URL")
+  }
+
+  const pathMatch = parsed.pathname.match(/^\/jobannonce\/([hr]\d+)\/?$/i)
+  if (!pathMatch) {
+    throw new Error("Invalid Jobindex job URL path")
+  }
+
+  const id = pathMatch[1]
+  return { url: `${BASE_URL}/jobannonce/${id}`, id }
 }
 
 /**
@@ -93,7 +129,7 @@ function parseDetailPage(html: string, url: string, id: string): DetailResult {
     const linkMatch = companySection[1].match(/<[Aa][^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/[Aa]>/i)
     if (linkMatch) {
       company = decodeHtmlEntities(stripTags(linkMatch[2])) || null
-      companyUrl = linkMatch[1] || null
+      companyUrl = normalizeHttpUrl(linkMatch[1])
     }
   }
 
@@ -164,15 +200,14 @@ function parseDetailPage(html: string, url: string, id: string): DetailResult {
   let applyUrl: string | null = null
   const applySection = html.match(/class="jix_onlineapplication_button"[^>]*>[\s\S]*?href="([^"]+)"/i)
   if (applySection) {
-    const href = decodeHtmlEntities(applySection[1])
-    applyUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`
+    applyUrl = normalizeHttpUrl(applySection[1])
   }
 
   // If not found, look for any /c?t= link
   if (!applyUrl) {
     const ctMatch = html.match(/href="(\/c\?t=[^"]+)"/)
     if (ctMatch) {
-      applyUrl = `${BASE_URL}${decodeHtmlEntities(ctMatch[1])}`
+      applyUrl = normalizeHttpUrl(ctMatch[1])
     }
   }
 
@@ -198,7 +233,14 @@ function parseDetailPage(html: string, url: string, id: string): DetailResult {
   const canonicalMatch = html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i) ||
                          html.match(/property="og:url"[^>]+content="([^"]+)"/i) ||
                          html.match(/content="([^"]+)"[^>]+property="og:url"/i)
-  const canonicalUrl = canonicalMatch ? canonicalMatch[1] : url
+  let canonicalUrl = url
+  if (canonicalMatch) {
+    try {
+      canonicalUrl = normalizeJobDetailInput(decodeHtmlEntities(canonicalMatch[1])).url
+    } catch {
+      canonicalUrl = url
+    }
+  }
 
   // Extract ID from canonical URL, fall back to the provided ID
   const canonicalId = extractIdFromUrl(canonicalUrl) || id
@@ -236,9 +278,8 @@ export const detail = defineCommand({
       process.exit(1)
     }
 
-    const { url, id } = buildUrl(idArg)
-
     try {
+      const { url, id } = normalizeJobDetailInput(idArg)
       const html = await htmlFetch(url)
 
       if (signal.aborted) return

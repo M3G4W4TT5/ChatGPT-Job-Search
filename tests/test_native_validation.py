@@ -105,7 +105,14 @@ class PluginPackaging(unittest.TestCase):
         self.assertFalse(list(self.output.rglob("*.pdf")))
         self.assertFalse(list(self.output.rglob("*.aux")))
         self.assertFalse(list(self.output.rglob("*.out")))
-        self.assertFalse(list(self.output.rglob("bun.lock")))
+        lockfiles = sorted(path.relative_to(self.output).as_posix() for path in self.output.rglob("bun.lock"))
+        self.assertEqual(lockfiles, [
+            "skills/freehire-search/cli/bun.lock",
+            "skills/jobbank-search/cli/bun.lock",
+            "skills/jobdanmark-search/cli/bun.lock",
+            "skills/jobindex-search/cli/bun.lock",
+            "skills/jobnet-search/cli/bun.lock",
+        ])
         for private in ("profile", "documents", "job_scraper", "reports", "salary_data.json"):
             self.assertFalse((self.output / private).exists())
 

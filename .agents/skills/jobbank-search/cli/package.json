@@ -1,6 +1,7 @@
 {
   "name": "jobbank-cli",
   "version": "1.0.0",
+  "packageManager": "bun@1.3.14",
   "description": "CLI for Akademikernes Jobbank (jobbank.dk) — job search for highly educated candidates",
   "type": "module",
   "main": "src/cli.ts",

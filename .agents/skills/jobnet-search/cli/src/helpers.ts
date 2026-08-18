@@ -16,6 +16,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
         "User-Agent": USER_AGENT,
         "x-csrf": "1",
       },
+      redirect: "error",
       signal: AbortSignal.timeout(15000),
     })
 

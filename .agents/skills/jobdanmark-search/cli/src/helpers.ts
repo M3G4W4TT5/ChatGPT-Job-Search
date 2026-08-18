@@ -13,6 +13,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
+      redirect: "error",
       signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
@@ -45,6 +46,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
         "User-Agent": USER_AGENT,
       },
       body: JSON.stringify(body),
+      redirect: "error",
       signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {

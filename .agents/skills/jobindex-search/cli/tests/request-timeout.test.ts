@@ -19,6 +19,7 @@ describe("request timeout", () => {
 
     await apiFetch("/search");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
+    expect(init?.redirect).toBe("error");
   });
 
   test("htmlFetch passes an AbortSignal timeout to fetch", async () => {
@@ -30,5 +31,6 @@ describe("request timeout", () => {
 
     await htmlFetch("https://www.jobindex.dk/x");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
+    expect(init?.redirect).toBe("manual");
   });
 });
