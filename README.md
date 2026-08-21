@@ -104,20 +104,10 @@ See [SETUP.md](SETUP.md) for Python, Bun, MiKTeX, and Poppler details.
 | `$gmail-sync` | proposed Gmail-derived tracker changes |
 | `$notion-sync` | proposed and approved Notion synchronization |
 
-Portal skills currently include Freehire, a user-controlled LinkedIn export/browser workflow, Akademikernes Jobbank, Jobdanmark, Jobindex, and Jobnet. Only Freehire is enabled by default; all other portals require an intentional private opt-in after reviewing their current access rules.
-
-## Plugin packaging
-
-Assemble a local package without publishing it:
-
-```powershell
-.\.venv\Scripts\python.exe tools\package_plugin.py
-```
-
-The ignored output is `dist/chatgpt-job-search/`. Validate that bundle with the current OpenAI plugin validator before distribution. Packaging copies the native skills and only their tracked public support files: the manifest, `AGENTS.md`, README, licence, portal defaults, and synthetic document sources. Private runtime directories are outside the package source.
+Portal skills currently include Freehire, a user-controlled LinkedIn export/browser workflow, Akademikernes Jobbank, Jobdanmark, Jobindex, and Jobnet. All except LinkedIn are enabled by default.
 
 ## Licence
 
-ChatGPT Job Search is an OpenAI-native port of [Mads Lorentzen's AI Job Search](https://github.com/MadsLorentzen/ai-job-search). Mads Lorentzen designed and authored the original project.
+ChatGPT Job Search is an OpenAI-native port of [Mads Lorentzen's AI Job Search](https://github.com/MadsLorentzen/ai-job-search).
 
 MIT. Copyright (c) 2026 Mads Lorentzen. See [LICENSE](LICENSE).
